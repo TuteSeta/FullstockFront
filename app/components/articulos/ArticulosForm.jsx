@@ -1,14 +1,22 @@
 "use client"
+import { type } from 'os';
 import { useState } from 'react';
 
 export default function ArticuloForm({ onSuccess }) {
   const [formData, setFormData] = useState({
-    codigo: '',
+    codArticulo: '',
+    nombreArt: '',
     descripcion: '',
     demanda: '',
+    cantArticulo: '',
+    cantMaxArticulo: '',
     costoAlmacenamiento: '',
+    costoMantenimiento: '',
     costoPedido: '',
-    costoCompra: ''
+    costoCompra: '',
+    desviacionDemandaLArticulo: '',
+    desviacionDemandaTArticulo: '',
+    nivelServicioDeseado:''
   });
 
   const handleChange = (e) => {
@@ -25,12 +33,19 @@ export default function ArticuloForm({ onSuccess }) {
 
     if (res.ok) {
       setFormData({
-        codigo: '',
+        codArticulo: '',
+        nombreArt: '',
         descripcion: '',
         demanda: '',
+        cantArticulo: '',
+        cantMaxArticulo: '',
         costoAlmacenamiento: '',
+        costoMantenimiento: '',
         costoPedido: '',
-        costoCompra: ''
+        costoCompra: '',
+        desviacionDemandaLArticulo: '',
+        desviacionDemandaTArticulo: '',
+        nivelServicioDeseado:''
       });
       onSuccess(); // actualizar lista
     }
@@ -39,12 +54,19 @@ export default function ArticuloForm({ onSuccess }) {
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {[
-        { name: 'codigo', label: 'Código' },
+        { name: 'codArticulo', label: 'Código' },
+        { name: 'nombreArt', label: 'Nombre Artículo' },
         { name: 'descripcion', label: 'Descripción' },
         { name: 'demanda', label: 'Demanda', type: 'number' },
+        { name: 'cantArticulo', label: 'Cantidad Articulo', type: 'number' },
+        { name: 'cantMaxArticulo', label: 'Cantidad Maxima Articulo', type: 'number' },
         { name: 'costoAlmacenamiento', label: 'Costo Almacenamiento', type: 'number' },
+        { name: 'costoMantenimiento', label: 'Costo Mantenimiento', type: 'number' },
         { name: 'costoPedido', label: 'Costo Pedido', type: 'number' },
         { name: 'costoCompra', label: 'Costo Compra', type: 'number' },
+        { name: 'desviacionDemandaLArticulo', label: 'Desviación Demanda L Artículo', type: 'number' },
+        { name: 'desviacionDemandaTArticulo', label: 'Desviación Demanda T Artículo', type: 'number' },
+        { name: 'nivelServicioDeseado', label: 'Nivel Servicio Deseado', type: 'number' },
       ].map(({ name, label, type = 'text' }) => (
         <input
           key={name}

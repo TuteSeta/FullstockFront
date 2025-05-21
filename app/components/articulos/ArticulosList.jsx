@@ -6,9 +6,10 @@ export default function ArticuloList({ articulos }) {
   return (
     <div className="grid gap-4">
       {articulos.map((a) => (
-        <div key={a.id} className="border border-gray-200 rounded p-4 shadow-sm bg-gray-50">
-          <h3 className="font-semibold text-blue-700">{a.codigo} - {a.descripcion}</h3>
+        <div key={a.codArticulo} className="border border-gray-200 rounded p-4 shadow-sm bg-gray-50">
+          <h3 className="font-semibold text-blue-700">{a.codArticulo} - {a.descripcion}</h3>
           <p className="text-sm text-gray-700">Demanda: {a.demanda}</p>
+          <p className="text-sm text-gray-700">Cantidad Artículo: {a.cantArticulo}</p>
         </div>
       ))}
     </div>
