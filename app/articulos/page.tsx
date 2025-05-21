@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import ArticuloForm from '../components/articulos/ArticulosForm';
 import ArticuloList from '../components/articulos/ArticulosList';
 import { Package } from 'lucide-react';
+import BackButton from '../components/BackButton'
 
 export default function ArticulosPage() {
     const [articulos, setArticulos] = useState([]);
@@ -20,6 +21,7 @@ export default function ArticulosPage() {
     return (
         <main className="min-h-screen bg-gray-100 text-gray-800 p-8">
             <div className="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6">
+                <BackButton/>
                 <div className='flex items-center mb-4'>
                     <Package className="w-7 h-7 text-blue-600" />
                     <h1 className="text-3xl font-bold ml-2">Gestion de articulos</h1>
