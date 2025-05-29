@@ -116,9 +116,9 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
 
                   <button
                     onClick={async () => {
-                      const confirm = window.confirm("¿Seguro que querés eliminar este artículo?");
+                      const confirm = window.confirm("¿Seguro que querés eliminar este proveedor?");
                       if (confirm) {
-                        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${proveedor.codProveedor}`, {
+                        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedores/${proveedor.codProveedor}`, {
                           method: 'DELETE',
                         });
                         setExpandido(false);
