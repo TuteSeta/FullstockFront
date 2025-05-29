@@ -35,9 +35,13 @@ export default function VentasPage() {
   }, []);
 
   const handleVentaSuccess = async () => {
-    const updatedVentas = await obtenerVentas();
-    setVentas(updatedVentas);
-  };
+  const [updatedArticulos, updatedVentas] = await Promise.all([
+    obtenerArticulos(),
+    obtenerVentas(),
+  ]);
+  setArticulos(updatedArticulos);
+  setVentas(updatedVentas);
+};
 
   return (
     <div className="space-y-8">
