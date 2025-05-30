@@ -10,15 +10,15 @@ export default function VentasList({ ventas }) {
       {ventas.map((venta) => (
         <div
           key={venta.nroVenta}
-          className="border border-gray-200 rounded p-4 shadow-sm bg-gray-50"
+          className="border border-gray-200 rounded p-4 shadow-sm bg-white"
         >
-          <h3 className="font-semibold text-green-700">
+          <h3 className="font-semibold text-gray-800">
             Venta #{venta.nroVenta} - Artículos:&nbsp;
             {venta.detalleVenta && venta.detalleVenta.length > 0
               ? venta.detalleVenta
                   .map((detalle) => (
                     <span key={detalle.articulo.codArticulo} className="text-blue-600">
-                      {detalle.articulo.nombreArt} (Código: {detalle.articulo.codArticulo})
+                      ({detalle.articulo.nombreArt}) Código: ({detalle.articulo.codArticulo})
                     </span>
                   ))
                   .reduce((prev, curr) => [prev, ", ", curr])
