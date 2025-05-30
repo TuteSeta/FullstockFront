@@ -13,8 +13,8 @@ export default function VentasList({ ventas }) {
           className="border border-gray-200 rounded p-4 shadow-sm bg-gray-50"
         >
           <h3 className="font-semibold text-green-700">
-            Venta #{venta.nroVenta} - Artículo: {venta.articulo?.nombreArt || "Desconocido"} - Código: {venta.articulo?.codArticulo || "?"} - 
-            Fecha: {new Date(venta.fechaVenta).toLocaleDateString()} - Monto: (${venta.montoTotalVenta})
+            Venta #{venta.nroVenta} - Artículo: ({venta.articulo?.nombreArt}) - Código: ({venta.articulo?.codArticulo}) - 
+            Fecha: ({new Date(venta.fechaVenta).toLocaleDateString()}) - Monto: (${venta.montoTotalVenta})
           </h3>
           <p className="text-sm text-gray-700">
             Cantidad vendida: {venta.cantidad}

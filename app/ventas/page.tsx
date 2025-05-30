@@ -1,4 +1,4 @@
-"use client"; // Añade esto si el archivo no lo tiene
+"use client"; 
 
 import { useState, useEffect } from "react";
 import VentaForm from "@/app/components/ventas/VentaForm";
