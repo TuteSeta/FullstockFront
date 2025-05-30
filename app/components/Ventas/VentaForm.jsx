@@ -33,11 +33,11 @@ export default function VentaForm({ articulos, onSuccess }) {
         value={codArticulo}
         onChange={(e) => setCodArticulo(e.target.value)}
         required
-        className="border border-gray-300 rounded px-3 py-2 col-span-full"
+        className="border border-gray-300 rounded px-3 py-2 col-span-full bg-white text-gray-800"
       >
         <option value="">Seleccione un artículo</option>
         {articulos
-          .filter((a) => a.cantArticulo >= 1) // Filtrar artículos con stock mayor o igual a 1
+          .filter((a) => a.cantArticulo >= 1)
           .map((a) => (
             <option key={a.codArticulo} value={a.codArticulo}>
               #{a.codArticulo} - {a.nombreArt} (Stock: {a.cantArticulo})
@@ -52,13 +52,13 @@ export default function VentaForm({ articulos, onSuccess }) {
         value={cantidad}
         onChange={(e) => setCantidad(e.target.value)}
         required
-        className="border border-gray-300 rounded px-3 py-2 col-span-full"
+        className="border border-gray-300 rounded px-3 py-2 col-span-full text-gray-800 bg-white"
         max={articulos.find((a) => a.codArticulo === parseInt(codArticulo))?.cantArticulo || ""}
       />
 
       <button
         type="submit"
-        className="col-span-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+        className="col-span-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
       >
         Registrar Venta
       </button>
