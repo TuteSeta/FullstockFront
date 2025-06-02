@@ -1,4 +1,4 @@
-"use client"; 
+"use client"; // Añade esto si el archivo no lo tiene
 
 import { useState, useEffect } from "react";
 import VentaForm from "@/app/components/ventas/VentaForm";
@@ -35,24 +35,24 @@ export default function VentasPage() {
   }, []);
 
   const handleVentaSuccess = async () => {
-    const [updatedArticulos, updatedVentas] = await Promise.all([
-      obtenerArticulos(),
-      obtenerVentas(),
-    ]);
-    setArticulos(updatedArticulos);
-    setVentas(updatedVentas);
-  };
+  const [updatedArticulos, updatedVentas] = await Promise.all([
+    obtenerArticulos(),
+    obtenerVentas(),
+  ]);
+  setArticulos(updatedArticulos);
+  setVentas(updatedVentas);
+};
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-white min-h-screen p-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-800">Registrar Venta</h1>
+        <h1 className="text-2xl font-semibold text-black">Registrar Venta</h1>
         <VentaForm articulos={articulos} onSuccess={handleVentaSuccess} />
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold text-gray-800">Ventas Registradas</h2>
-        <VentasList ventas={ventas} />
+        <h2 className="text-xl font-semibold text-black">Ventas Registradas</h2>
+        <VentasList ventas={ventas}  onSuccess={handleVentaSuccess}/>
       </div>
     </div>
   );
