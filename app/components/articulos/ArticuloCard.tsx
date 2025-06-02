@@ -12,41 +12,55 @@ type Articulo = {
   modeloInventarioLoteFijo?: { stockSeguridadLF: number };
 };
 
-export default function ArticuloCard({ articulo, onEdit, onDelete }: { articulo: Articulo, onEdit: () => void, onDelete: () => void }) {
+export default function ArticuloCard({
+  articulo,
+  onEdit,
+  onDelete,
+}: {
+  articulo: Articulo;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   const [expandido, setExpandido] = useState(false);
 
   const modelo = articulo.modeloInventarioLoteFijo ? 'Lote Fijo' : 'Intervalo Fijo';
-  const stockSeguridad = articulo.modeloInventarioLoteFijo?.stockSeguridadLF ??
-                         articulo.modeloInventarioIntervaloFijo?.stockSeguridadIF ??
-                         'N/A';
+  const stockSeguridad =
+    articulo.modeloInventarioLoteFijo?.stockSeguridadLF ??
+    articulo.modeloInventarioIntervaloFijo?.stockSeguridadIF ??
+    'N/A';
 
   return (
     <>
       <div
         onClick={() => setExpandido(true)}
-        className="grid grid-cols-6 gap-4 bg-white shadow rounded-lg p-4 mb-4 w-full cursor-pointer"
+        className="w-full bg-white shadow rounded-lg p-4 mb-4 cursor-pointer grid grid-cols-1 sm:grid-cols-6 gap-4 sm:items-center"
       >
-        <div className="flex items-center ">
-          <h2 className="text-sm font-semibold text-gray-500">{articulo.nombreArt}</h2>
+        <div className="text-sm text-gray-700">
+          <span className="block sm:hidden font-semibold">Nombre: </span>
+          {articulo.nombreArt}
         </div>
-        <div className="flex items-center justify-center">
-          <p className="text-sm text-gray-700">{articulo.codArticulo}</p>
+        <div className="text-sm text-gray-700 sm:text-center">
+          <span className="block sm:hidden font-semibold">Código: </span>
+          {articulo.codArticulo}
         </div>
-        <div className="flex items-center justify-center">
-          <p className="text-sm text-gray-700">{articulo.cantArticulo}</p>
+        <div className="text-sm text-gray-700 sm:text-center">
+          <span className="block sm:hidden font-semibold">Cantidad: </span>
+          {articulo.cantArticulo}
         </div>
-        <div className="flex items-center justify-center">
-          <p className="text-sm text-gray-700 ">{articulo.cantMaxArticulo}</p>
+        <div className="text-sm text-gray-700 sm:text-center">
+          <span className="block sm:hidden font-semibold">Cantidad Máx.: </span>
+          {articulo.cantMaxArticulo}
         </div>
-        <div className="flex items-center justify-center">
-          <p className="text-sm text-gray-700">{modelo}</p>
+        <div className="text-sm text-gray-700 sm:text-center">
+          <span className="block sm:hidden font-semibold">Modelo: </span>
+          {modelo}
         </div>
-        <div className="flex items-center justify-center">
-          <p className="text-sm text-gray-700">{stockSeguridad}</p>
+        <div className="text-sm text-gray-700 sm:text-center">
+          <span className="block sm:hidden font-semibold">Stock Seguridad: </span>
+          {stockSeguridad}
         </div>
       </div>
 
-      {/* Modal expandido */}
       <AnimatePresence>
         {expandido && (
           <motion.div
@@ -62,7 +76,7 @@ export default function ArticuloCard({ articulo, onEdit, onDelete }: { articulo:
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.25 }}
-              className="fixed inset-0 z-50 flex items-center justify-center"
+              className="fixed inset-0 z-50 flex items-center justify-center px-4"
             >
               <motion.div
                 onClick={(e) => e.stopPropagation()}
@@ -75,16 +89,24 @@ export default function ArticuloCard({ articulo, onEdit, onDelete }: { articulo:
                 >
                   ×
                 </button>
+
                 <h2 className="text-2xl font-bold text-gray-900 mb-1">{articulo.nombreArt}</h2>
                 <p className="text-sm text-gray-500 mb-4">Código: {articulo.codArticulo}</p>
                 <p className="mb-4 text-gray-700">{articulo.descripcion}</p>
-                <p><strong>Cantidad Actual:</strong> {articulo.cantArticulo}</p>
-                <p><strong>Cantidad Máxima:</strong> {articulo.cantMaxArticulo}</p>
-                <p><strong>Modelo de Inventario:</strong> {modelo}</p>
-                <p><strong>Stock de Seguridad:</strong> {stockSeguridad}</p>
+                <p>
+                  <strong>Cantidad Actual:</strong> {articulo.cantArticulo}
+                </p>
+                <p>
+                  <strong>Cantidad Máxima:</strong> {articulo.cantMaxArticulo}
+                </p>
+                <p>
+                  <strong>Modelo de Inventario:</strong> {modelo}
+                </p>
+                <p>
+                  <strong>Stock de Seguridad:</strong> {stockSeguridad}
+                </p>
 
-                {/* Botones para editar y eliminar */}
-                <div className="mt-4 flex justify-end space-x-2">
+                <div className="mt-4 flex flex-wrap justify-end gap-2">
                   <button
                     onClick={() => {
                       onEdit();

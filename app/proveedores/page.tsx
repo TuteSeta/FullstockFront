@@ -27,11 +27,11 @@ export default function ProveedoresPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gray-100 text-gray-800 p-8">
+    <main className="min-h-screen bg-gray-100 text-gray-800 px-4 sm:px-8 py-8">
       <div className="max-w-7xl mx-auto">
         <BackButton />
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div className="flex items-center">
             <Truck className="w-7 h-7 text-blue-600" />
             <h1 className="text-3xl font-bold ml-2">Gestión de proveedores</h1>
@@ -39,7 +39,7 @@ export default function ProveedoresPage() {
 
           <button
             onClick={() => setMostrarFormulario(true)}
-            className="flex items-center bg-blue-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700 transition"
+            className="w-full sm:w-auto flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700 transition"
           >
             <Plus className="mr-2" />
             Agregar proveedor
@@ -47,7 +47,7 @@ export default function ProveedoresPage() {
         </div>
 
         {/* Encabezado tipo tabla */}
-        <div className="grid grid-cols-2 gap-4 mb-4 p-4 bg-gray-200 rounded-lg">
+        <div className="hidden sm:grid grid-cols-2 gap-4 mb-4 p-4 bg-gray-200 rounded-lg">
           <div className="font-semibold">Nombre</div>
           <div className="font-semibold text-center">Baja</div>
         </div>
@@ -76,7 +76,7 @@ export default function ProveedoresPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.25 }}
-                className="fixed inset-0 z-50 flex items-center justify-center"
+                className="fixed inset-0 z-50 flex items-center justify-center px-4"
               >
                 <div
                   className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full text-gray-800 relative"

@@ -51,10 +51,17 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
         onClick={() => setExpandido(true)}
         className="cursor-pointer bg-white shadow rounded-lg p-4 transition-all duration-300 hover:scale-[1.01]"
       >
-        <h2 className="text-xl font-semibold text-gray-900">{proveedor.nombreProveedor}</h2>
+        <div className="text-gray-900 text-base font-semibold sm:hidden">
+          <span className="font-medium">Nombre:</span> {proveedor.nombreProveedor}
+        </div>
+        <h2 className="hidden sm:block text-xl font-semibold text-gray-900">
+          {proveedor.nombreProveedor}
+        </h2>
+
         {proveedor.fechaHoraBajaProveedor && (
-          <p className="text-sm text-red-500 mt-1">
-            Baja: {new Date(proveedor.fechaHoraBajaProveedor).toLocaleDateString()}
+          <p className="text-sm text-red-500 mt-1 sm:hidden">
+            <span className="font-medium">Baja:</span>{' '}
+            {new Date(proveedor.fechaHoraBajaProveedor).toLocaleDateString()}
           </p>
         )}
       </div>
@@ -81,8 +88,9 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
             >
               <motion.div
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white p-6 rounded-lg shadow-lg max-w-6xl w-[95vw] h-[55vw] text-gray-800 relative"
+                className="bg-white p-6 rounded-lg shadow-lg w-full max-w-[95vw] sm:max-w-[700px] lg:max-w-[900px] xl:max-w-[1100px] max-h-[90vh] overflow-y-auto text-gray-800 relative"
               >
+
                 {/* Botón cerrar */}
                 <button
                   onClick={() => setExpandido(false)}
@@ -175,7 +183,7 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
                         body: JSON.stringify(formData),
                       });
                       setModoEdicion(false);
-                     
+
                     }}
                     className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
                   >

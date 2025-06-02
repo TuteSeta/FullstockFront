@@ -3,15 +3,15 @@ import { li } from "framer-motion/client";
 import { useState } from "react";
 
 export default function VentaForm({ articulos, onSuccess }) {
-  const [articulosVenta,setArticulosVenta] = useState([]);
+  const [articulosVenta, setArticulosVenta] = useState([]);
   const [codArticulo, setCodArticulo] = useState("");
   const [cantidad, setCantidad] = useState("");
 
   // Agregar articulo 
   const agregarArticulo = () => {
-    if(!codArticulo || !cantidad) return;
+    if (!codArticulo || !cantidad) return;
     const articulo = articulos.find(a => a.codArticulo === parseInt(codArticulo));
-    if(!articulo) return;
+    if (!articulo) return;
     setArticulosVenta(prev => [
       ...prev,
       {
@@ -57,7 +57,11 @@ export default function VentaForm({ articulos, onSuccess }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 space-y-2 text-sm" onClick={(e) => e.stopPropagation()}>
+    <form
+      onSubmit={handleSubmit}
+      className="mt-4 space-y-4 text-sm"
+      onClick={(e) => e.stopPropagation()}
+    >
       <select
         value={codArticulo}
         onChange={(e) => setCodArticulo(e.target.value)}
@@ -84,7 +88,7 @@ export default function VentaForm({ articulos, onSuccess }) {
       />
 
       <button type="button" onClick={agregarArticulo} className="bg-blue-600 text-white px-3 py-1 rounded">
-          Añadir
+        Añadir
       </button>
 
       {/*Lista de articulos agregados */}
