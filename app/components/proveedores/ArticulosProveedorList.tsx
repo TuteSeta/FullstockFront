@@ -23,6 +23,12 @@ type Props = {
 export default function ArticulosProveedorList({ proveedorId, articulos, onDelete }: Props) {
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Partial<ArticuloProveedor>>({});
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 4;
+
+  const inicio = (paginaActual - 1) * itemsPorPagina;
+  const articulosPagina = articulos.slice(inicio, inicio + itemsPorPagina);
+  const totalPaginas = Math.ceil(articulos.length / itemsPorPagina);
 
   const comenzarEdicion = (art: ArticuloProveedor) => {
     setEditandoId(art.codArticulo);
@@ -66,8 +72,35 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
     <div className="mt-6">
       <h3 className="text-lg font-semibold mb-3">Productos que ofrece</h3>
 
+      {/* Vista mobile en formato card */}
+      <div className="md:hidden space-y-4">
+        {articulosPagina.map((rel) => (
+          <div key={rel.codArticulo} className="bg-white shadow rounded-lg p-4 space-y-2 text-sm">
+            <p><strong>Artículo:</strong> {rel.articulo.nombreArt}</p>
+            <p><strong>Precio de compra:</strong> ${rel.precioUnitarioAP.toFixed(2)}</p>
+            <p><strong>Cargo pedido:</strong> ${rel.cargoPedidoAP.toFixed(2)}</p>
+            <p><strong>Demora entrega:</strong> {rel.demoraEntregaAP} días</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => comenzarEdicion(rel)}
+                className="flex-1 bg-blue-500 text-white py-1 rounded hover:bg-blue-600"
+              >
+                Editar
+              </button>
+              <button
+                onClick={() => eliminarArticuloProveedor(rel.codArticulo)}
+                className="flex-1 bg-red-500 text-white py-1 rounded hover:bg-red-600"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Vista desktop tipo tabla */}
       {articulos.length > 0 ? (
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-300 text-sm">
             <thead className="bg-blue-700 text-white">
               <tr>
@@ -79,10 +112,9 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
               </tr>
             </thead>
             <tbody>
-              {articulos.map((rel) => (
+              {articulosPagina.map((rel) => (
                 <tr key={rel.codArticulo} className="border-t border-gray-200 hover:bg-gray-50">
                   <td className="px-4 py-2">{rel.articulo.nombreArt}</td>
-
                   <td className="px-4 py-2">
                     {editandoId === rel.codArticulo ? (
                       <input
@@ -97,7 +129,6 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
                       `$${rel.precioUnitarioAP.toFixed(2)}`
                     )}
                   </td>
-
                   <td className="px-4 py-2">
                     {editandoId === rel.codArticulo ? (
                       <input
@@ -112,7 +143,6 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
                       `$${rel.cargoPedidoAP.toFixed(2)}`
                     )}
                   </td>
-
                   <td className="px-4 py-2">
                     {editandoId === rel.codArticulo ? (
                       <input
@@ -127,7 +157,6 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
                       `${rel.demoraEntregaAP} días`
                     )}
                   </td>
-
                   <td className="px-4 py-2 space-x-2 flex">
                     {editandoId === rel.codArticulo ? (
                       <>
@@ -175,6 +204,27 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
         </div>
       ) : (
         <p className="text-sm text-gray-500">No hay artículos registrados.</p>
+      )}
+
+      {/* Paginación común */}
+      {articulos.length > 0 && (
+        <div className="flex justify-between items-center mt-4 px-2 text-sm">
+          <button
+            onClick={() => setPaginaActual((p) => Math.max(1, p - 1))}
+            disabled={paginaActual === 1}
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <span>Página {paginaActual} de {totalPaginas}</span>
+          <button
+            onClick={() => setPaginaActual((p) => Math.min(totalPaginas, p + 1))}
+            disabled={paginaActual === totalPaginas}
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
       )}
     </div>
   );

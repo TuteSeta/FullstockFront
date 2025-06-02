@@ -59,7 +59,68 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
     <form onSubmit={handleSubmit} className="mt-6" onClick={(e) => e.stopPropagation()}>
       <h3 className="text-sm font-semibold mb-2">Asignar nuevo artículo</h3>
 
-      <div className="overflow-x-auto">
+      {/* MOBILE: layout en columnas con labels */}
+      <div className="md:hidden bg-white p-4 rounded shadow space-y-3 text-sm">
+        <div>
+          <label className="block font-medium mb-1">Artículo</label>
+          <select
+            className="w-full border rounded px-2 py-1"
+            value={formData.codArticulo}
+            onChange={(e) => setFormData({ ...formData, codArticulo: e.target.value })}
+            required
+          >
+            <option value="">Seleccionar</option>
+            {articulosFiltrados.map((articulo) => (
+              <option key={articulo.codArticulo} value={articulo.codArticulo}>
+                {articulo.nombreArt}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block font-medium mb-1">Precio de compra</label>
+          <input
+            type="number"
+            className="w-full border rounded px-2 py-1"
+            value={formData.precioUnitarioAP}
+            onChange={(e) => setFormData({ ...formData, precioUnitarioAP: e.target.value })}
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block font-medium mb-1">Cargo pedido</label>
+          <input
+            type="number"
+            className="w-full border rounded px-2 py-1"
+            value={formData.cargoPedidoAP}
+            onChange={(e) => setFormData({ ...formData, cargoPedidoAP: e.target.value })}
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block font-medium mb-1">Demora entrega (días)</label>
+          <input
+            type="number"
+            className="w-full border rounded px-2 py-1"
+            value={formData.demoraEntregaAP}
+            onChange={(e) => setFormData({ ...formData, demoraEntregaAP: e.target.value })}
+            required
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="w-full mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+        >
+          Confirmar
+        </button>
+      </div>
+
+      {/* DESKTOP: tabla tradicional */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-300 text-sm">
           <thead className="bg-blue-100 text-gray-800">
             <tr>
@@ -72,7 +133,6 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
           </thead>
           <tbody>
             <tr className="border-t border-gray-200">
-              {/* Artículo */}
               <td className="px-4 py-2">
                 <select
                   className="w-full border rounded px-2 py-1"
@@ -88,8 +148,6 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
                   ))}
                 </select>
               </td>
-
-              {/* Precio */}
               <td className="px-4 py-2">
                 <input
                   type="number"
@@ -99,8 +157,6 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
                   required
                 />
               </td>
-
-              {/* Cargo pedido */}
               <td className="px-4 py-2">
                 <input
                   type="number"
@@ -110,8 +166,6 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
                   required
                 />
               </td>
-
-              {/* Demora entrega */}
               <td className="px-4 py-2">
                 <input
                   type="number"
@@ -121,8 +175,6 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
                   required
                 />
               </td>
-
-              {/* Botón agregar */}
               <td className="px-4 py-2">
                 <button
                   type="submit"
