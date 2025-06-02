@@ -1,9 +1,10 @@
-"use client";
+'use client';
 import { useState, useEffect } from 'react';
 import ProveedoresForm from '../components/proveedores/ProveedoresForm';
 import ProveedorCard from '../components/proveedores/ProveedorCard';
 import { Truck, Plus } from 'lucide-react';
 import BackButton from '../components/BackButton';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type Proveedor = {
   codProveedor: number;
@@ -37,32 +38,69 @@ export default function ProveedoresPage() {
           </div>
 
           <button
-            onClick={() => setMostrarFormulario(!mostrarFormulario)}
-            className="flex items-center bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            onClick={() => setMostrarFormulario(true)}
+            className="flex items-center bg-blue-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700 transition"
           >
             <Plus className="mr-2" />
-            {mostrarFormulario ? 'Cerrar formulario' : 'Agregar proveedor'}
+            Agregar proveedor
           </button>
         </div>
 
-        <div className="flex gap-8">
-          {/* Cards de proveedores */}
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {proveedores.map((proveedor) => (
-              <ProveedorCard key={proveedor.codProveedor} proveedor={proveedor} />
-            ))}
-          </div>
-
-          {/* Formulario al costado */}
-          {mostrarFormulario && (
-            <div className="w-full max-w-sm bg-white p-4 rounded shadow h-fit">
-              <ProveedoresForm onSuccess={() => {
-                fetchProveedores();
-                setMostrarFormulario(false);
-              }} />
-            </div>
-          )}
+        {/* Encabezado tipo tabla */}
+        <div className="grid grid-cols-2 gap-4 mb-4 p-4 bg-gray-200 rounded-lg">
+          <div className="font-semibold">Nombre</div>
+          <div className="font-semibold text-center">Baja</div>
         </div>
+
+        {/* Lista de proveedores */}
+        <div className="flex flex-col gap-4">
+          {proveedores.map((proveedor) => (
+            <ProveedorCard key={proveedor.codProveedor} proveedor={proveedor} />
+          ))}
+        </div>
+
+        {/* Modal del formulario */}
+        <AnimatePresence>
+          {mostrarFormulario && (
+            <>
+              <motion.div
+                className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setMostrarFormulario(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.25 }}
+                className="fixed inset-0 z-50 flex items-center justify-center"
+              >
+                <div
+                  className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full text-gray-800 relative"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => setMostrarFormulario(false)}
+                    className="absolute top-3 right-3 text-gray-500 hover:text-red-500 text-xl font-bold rounded-full w-8 h-8 flex items-center justify-center transition hover:bg-gray-200"
+                    title="Cerrar"
+                  >
+                    ×
+                  </button>
+
+                  <ProveedoresForm
+                    onSuccess={() => {
+                      fetchProveedores();
+                      setMostrarFormulario(false);
+                    }}
+                  />
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </main>
   );

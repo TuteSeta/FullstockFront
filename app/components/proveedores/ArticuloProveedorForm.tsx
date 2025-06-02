@@ -28,6 +28,10 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
       .then(setArticulosDisponibles);
   }, []);
 
+  const articulosFiltrados = articulosDisponibles.filter(
+    (a) => !articulosAsignados.includes(a.codArticulo)
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -51,56 +55,86 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
     }
   };
 
-  const articulosFiltrados = articulosDisponibles.filter(
-    (a) => !articulosAsignados.includes(a.codArticulo)
-  );
-
   return (
-    <form onSubmit={handleSubmit} className="mt-4 space-y-2 text-sm" onClick={(e) => e.stopPropagation()}>
-      <select
-        className="w-full border rounded px-2 py-1"
-        value={formData.codArticulo}
-        onChange={(e) => setFormData({ ...formData, codArticulo: e.target.value })}
-        required
-      >
-        <option value="">Seleccionar artículo</option>
-        {articulosFiltrados.map((articulo) => (
-          <option key={articulo.codArticulo} value={articulo.codArticulo}>
-            {articulo.nombreArt}
-          </option>
-        ))}
-      </select>
+    <form onSubmit={handleSubmit} className="mt-6" onClick={(e) => e.stopPropagation()}>
+      <h3 className="text-sm font-semibold mb-2">Asignar nuevo artículo</h3>
 
-      <input
-        type="number"
-        placeholder="Precio unitario"
-        className="w-full border rounded px-2 py-1"
-        value={formData.precioUnitarioAP}
-        onChange={(e) => setFormData({ ...formData, precioUnitarioAP: e.target.value })}
-        required
-      />
-      <input
-        type="number"
-        placeholder="Cargo pedido"
-        className="w-full border rounded px-2 py-1"
-        value={formData.cargoPedidoAP}
-        onChange={(e) => setFormData({ ...formData, cargoPedidoAP: e.target.value })}
-        required
-      />
-      <input
-        type="number"
-        placeholder="Demora entrega"
-        className="w-full border rounded px-2 py-1"
-        value={formData.demoraEntregaAP}
-        onChange={(e) => setFormData({ ...formData, demoraEntregaAP: e.target.value })}
-        required
-      />
-      <button
-        type="submit"
-        className="w-full bg-green-600 text-white py-1 rounded hover:bg-green-700 transition"
-      >
-        Confirmar
-      </button>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-300 text-sm">
+          <thead className="bg-blue-100 text-gray-800">
+            <tr>
+              <th className="px-4 py-2 text-left">Artículo</th>
+              <th className="px-4 py-2 text-left">Precio de compra</th>
+              <th className="px-4 py-2 text-left">Cargo pedido</th>
+              <th className="px-4 py-2 text-left">Demora entrega (días)</th>
+              <th className="px-4 py-2 text-left">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-t border-gray-200">
+              {/* Artículo */}
+              <td className="px-4 py-2">
+                <select
+                  className="w-full border rounded px-2 py-1"
+                  value={formData.codArticulo}
+                  onChange={(e) => setFormData({ ...formData, codArticulo: e.target.value })}
+                  required
+                >
+                  <option value="">Seleccionar</option>
+                  {articulosFiltrados.map((articulo) => (
+                    <option key={articulo.codArticulo} value={articulo.codArticulo}>
+                      {articulo.nombreArt}
+                    </option>
+                  ))}
+                </select>
+              </td>
+
+              {/* Precio */}
+              <td className="px-4 py-2">
+                <input
+                  type="number"
+                  className="w-24 border rounded px-2 py-1"
+                  value={formData.precioUnitarioAP}
+                  onChange={(e) => setFormData({ ...formData, precioUnitarioAP: e.target.value })}
+                  required
+                />
+              </td>
+
+              {/* Cargo pedido */}
+              <td className="px-4 py-2">
+                <input
+                  type="number"
+                  className="w-24 border rounded px-2 py-1"
+                  value={formData.cargoPedidoAP}
+                  onChange={(e) => setFormData({ ...formData, cargoPedidoAP: e.target.value })}
+                  required
+                />
+              </td>
+
+              {/* Demora entrega */}
+              <td className="px-4 py-2">
+                <input
+                  type="number"
+                  className="w-24 border rounded px-2 py-1"
+                  value={formData.demoraEntregaAP}
+                  onChange={(e) => setFormData({ ...formData, demoraEntregaAP: e.target.value })}
+                  required
+                />
+              </td>
+
+              {/* Botón agregar */}
+              <td className="px-4 py-2">
+                <button
+                  type="submit"
+                  className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 transition"
+                >
+                  Confirmar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </form>
   );
 }

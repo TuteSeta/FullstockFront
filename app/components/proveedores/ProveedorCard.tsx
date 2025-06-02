@@ -81,7 +81,7 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
             >
               <motion.div
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white p-6 rounded-lg shadow-lg max-w-3xl w-full text-gray-800 relative"
+                className="bg-white p-6 rounded-lg shadow-lg max-w-6xl w-[95vw] h-[55vw] text-gray-800 relative"
               >
                 {/* Botón cerrar */}
                 <button
