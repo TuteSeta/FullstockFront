@@ -7,13 +7,24 @@ import BackButton from '../components/BackButton';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Articulo = {
-  codArticulo: number;
+ codArticulo: number;
   nombreArt: string;
   descripcion: string;
+  demanda: number;
   cantArticulo: number;
   cantMaxArticulo: number;
-  modeloInventario: string;
-  stockSeguridad: number;
+  costoAlmacenamiento: number;
+  costoMantenimiento: number;
+  costoPedido: number;
+  costoCompra: number;
+  desviacionDemandaLArticulo: number;
+  desviacionDemandaTArticulo: number;
+  nivelServicioDeseado: number;
+  fechaHoraBajaArticulo?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  modeloInventarioIntervaloFijo?: { stockSeguridadIF: number };
+  modeloInventarioLoteFijo?: { stockSeguridadLF: number };
 };
 
 export default function ArticulosPage() {
@@ -80,14 +91,15 @@ export default function ArticulosPage() {
 
         {/* Lista de artículos */}
         <div>
-          {articulos.map(articulo => (
+            {articulos.map((articulo: Articulo) => (
             <ArticuloCard
               key={articulo.codArticulo}
               articulo={articulo}
+              ventas={[]} // TODO: Replace with actual ventas data if available
               onEdit={() => handleEdit(articulo)}
               onDelete={() => handleDelete(articulo)}
             />
-          ))}
+            ))}
         </div>
 
         {/* Modal de formulario */}
