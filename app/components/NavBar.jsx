@@ -31,7 +31,7 @@ export function Navbar() {
             </Link>
           </li>
           <li>
-            <Link href="/ordenes" className="flex items-center p-2 rounded-md hover:bg-gray-700">
+            <Link href="/ordenesCompra" className="flex items-center p-2 rounded-md hover:bg-gray-700">
               <ClipboardList className="mr-3 w-5 h-5" />
               <span>Órdenes de Compra</span>
             </Link>
@@ -59,7 +59,7 @@ export function Navbar() {
           <Factory className="w-6 h-6" />
           Proveedores
         </Link>
-        <Link href="/ordenes" className="flex flex-col items-center text-xs hover:text-blue-400">
+        <Link href="/ordenesCompra" className="flex flex-col items-center text-xs hover:text-blue-400">
           <ClipboardList className="w-6 h-6" />
           Órdenes
         </Link>
