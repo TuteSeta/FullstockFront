@@ -118,14 +118,6 @@ export default function ProveedoresPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
-            <button
-              onClick={() => setMostrarFormulario(true)}
-              className="flex items-center bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-            >
-              <Plus className="mr-2" />
-              Agregar proveedor
-            </button>
-
             <label className="relative cursor-pointer bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition text-center">
               📁 Importar Excel
               <input
@@ -135,6 +127,13 @@ export default function ProveedoresPage() {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
             </label>
+            <button
+              onClick={() => setMostrarFormulario(true)}
+              className="flex items-center bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            >
+              <Plus className="mr-2" />
+              Agregar proveedor
+            </button>
           </div>
         </div>
 
