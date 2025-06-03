@@ -7,7 +7,7 @@ import { Boxes, Plus } from 'lucide-react';
 import BackButton from '../components/BackButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import ArticuloFiltro from '../components/articulos/ArticuloFiltro';
-
+import * as XLSX from 'xlsx';
 
 
 type Articulo = {
@@ -55,6 +55,62 @@ export default function ArticulosPage() {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const json = XLSX.utils.sheet_to_json(sheet);
+
+      // Convertimos cada fila a objeto tipo artículo
+      const articulosParseados = (json as any[]).map((row) => {
+        return {
+          nombreArt: row['nombreArt'] || '',
+          descripcion: row['descripcion'] || '',
+          demanda: Number(row['demanda'] || 0),
+          cantArticulo: Number(row['cantArticulo'] || 0),
+          cantMaxArticulo: Number(row['cantMaxArticulo'] || 0),
+          costoAlmacenamiento: Number(row['costoAlmacenamiento'] || 0),
+          costoMantenimiento: Number(row['costoMantenimiento'] || 0),
+          costoPedido: Number(row['costoPedido'] || 0),
+          costoCompra: Number(row['costoCompra'] || 0),
+          desviacionDemandaLArticulo: Number(row['desviacionDemandaLArticulo'] || 0),
+          desviacionDemandaTArticulo: Number(row['desviacionDemandaTArticulo'] || 0),
+          nivelServicioDeseado: Number(row['nivelServicioDeseado'] || 0),
+          modeloInventarioLoteFijo: row['loteOptimo'] != null ? {
+            loteOptimo: Number(row['loteOptimo']),
+            puntoPedido: Number(row['puntoPedido']),
+            stockSeguridadLF: Number(row['stockSeguridadLF'])
+          } : undefined,
+          modeloInventarioIntervaloFijo: row['intervaloTiempo'] != null ? {
+            intervaloTiempo: Number(row['intervaloTiempo']),
+            stockSeguridadIF: Number(row['stockSeguridadIF'])
+          } : undefined
+        };
+      });
+
+      // Enviar en lote
+      const requests = articulosParseados.map((art) =>
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(art),
+        })
+      );
+      await Promise.all(requests);
+      fetchArticulos();
+      alert('Artículos importados correctamente.');
+    } catch (err) {
+      console.error('Error al procesar archivo Excel:', err);
+      alert('Hubo un error al importar los artículos.');
+    }
+  };
+
+
   const articulosFiltrados = articulos.filter((a) =>
     filtros.nombre ? a.nombreArt.toLowerCase().includes(filtros.nombre.toLowerCase()) : true
   );
@@ -87,7 +143,21 @@ export default function ArticulosPage() {
           <div className="flex-1">
             <ArticuloFiltro onFiltrar={setFiltros} />
           </div>
-
+          <div className="relative">
+            <input
+              id="excel-upload"
+              type="file"
+              accept=".xlsx"
+              onChange={handleFileUpload}
+              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+            />
+            <label
+              htmlFor="excel-upload"
+              className="flex items-center justify-center whitespace-nowrap bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer"
+            >
+              📁 Importar Excel
+            </label>
+          </div>
           <button
             onClick={() => {
               setArticuloSeleccionado(null);
