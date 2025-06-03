@@ -9,21 +9,35 @@ export default function VentaForm({ articulos, onSuccess }) {
 
   // Agregar articulo 
   const agregarArticulo = () => {
-    if (!codArticulo || !cantidad) return;
-    const articulo = articulos.find(a => a.codArticulo === parseInt(codArticulo));
-    if (!articulo) return;
-    setArticulosVenta(prev => [
-      ...prev,
-      {
-        codArticulo: articulo.codArticulo,
-        nombreArt: articulo.nombreArt,
-        cantidad: parseInt(cantidad),
-        stock: articulo.cantArticulo,
-      }
-    ]);
-    setCodArticulo("");
-    setCantidad("");
-  };
+  if (!codArticulo) {
+    alert("Seleccione un artículo.");
+    return;
+  }
+
+  if (!cantidad || parseInt(cantidad) <= 0) {
+    alert("Ingrese una cantidad válida mayor a cero.");
+    return;
+  }
+
+  const articulo = articulos.find(a => a.codArticulo === parseInt(codArticulo));
+  if (!articulo) {
+    alert("Artículo no encontrado.");
+    return;
+  }
+
+  setArticulosVenta(prev => [
+    ...prev,
+    {
+      codArticulo: articulo.codArticulo,
+      nombreArt: articulo.nombreArt,
+      cantidad: parseInt(cantidad),
+      stock: articulo.cantArticulo,
+    }
+  ]);
+
+  setCodArticulo("");
+  setCantidad("");
+};
 
   //Eliminar articulo de la venta
   const eliminarArticulo = (codArticulo) => {
