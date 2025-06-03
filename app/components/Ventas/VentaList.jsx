@@ -63,22 +63,33 @@ export default function VentasList({ ventas, onSuccess }) {
 };
 
 
-  const handleEliminarArticulo = async (nroRenglonDV) => {
-    const confirmar = window.confirm('¿Estás seguro de que deseas eliminar este artículo?');
-    if (!confirmar) return;
+ const handleEliminarArticulo = async (nroRenglonDV) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venta-detalle/${nroRenglonDV}`, {
+    method: 'DELETE',
+  });
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venta-detalle/${nroRenglonDV}`, {
-      method: 'DELETE',
+  if (res.ok) {
+    const updatedDetalleVenta = ventaSeleccionada.detalleVenta.filter(
+      (d) => d.nroRenglonDV !== nroRenglonDV
+    );
+
+    const updatedMontoTotal = updatedDetalleVenta.reduce(
+      (total, d) => total + d.montoDetalleVenta,
+      0
+    );
+
+    setVentaSeleccionada({
+      ...ventaSeleccionada,
+      detalleVenta: updatedDetalleVenta,
+      montoTotalVenta: updatedMontoTotal,
     });
 
-    if (res.ok) {
-      await onSuccess?.();
-      const updatedVenta = ventas.find(v => v.nroVenta === ventaSeleccionada.nroVenta);
-      setVentaSeleccionada(updatedVenta);
-    } else {
-      alert('Error al eliminar el artículo.');
-    }
-  };
+    onSuccess?.(); // opcional si querés actualizar lista general
+
+  } else {
+    alert("Error al eliminar el artículo");
+  }
+};
 
   const startEditing = (index, cantidad) => {
     setEditandoIndex(index);

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import VentaForm from "@/app/components/ventas/VentaForm";
 import VentasList from "@/app/components/ventas/VentaList";
+import BackButton from "../components/BackButton";
 
 async function obtenerArticulos() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos`, {
@@ -45,6 +46,7 @@ export default function VentasPage() {
 
   return (
     <div className="space-y-8 bg-white min-h-screen p-6">
+     <BackButton label="Volver" />
       <div>
         <h1 className="text-2xl font-semibold text-black">Registrar Venta</h1>
         <VentaForm articulos={articulos} onSuccess={handleVentaSuccess} />
