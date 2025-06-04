@@ -10,12 +10,11 @@ export default function VentasList({ ventas, onSuccess }) {
   const [newCantidad, setNewCantidad] = useState("");
 
   if (!ventas.length) {
-    return <p className="text-black">No hay ventas registradas.</p>;
+    return <p className="text-gray-600">No hay ventas registradas.</p>;
   }
 
   const handleEliminarVenta = async (nroVenta) => {
-    const confirmar = window.confirm('¿Estás seguro de que deseas eliminar esta venta?');
-    if (!confirmar) return;
+    if (!window.confirm('¿Estás seguro de que deseas eliminar esta venta?')) return;
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ventas/${nroVenta}`, {
       method: 'DELETE',
@@ -29,67 +28,58 @@ export default function VentasList({ ventas, onSuccess }) {
     }
   };
 
- const handleEditarArticulo = async (nroRenglonDV, nuevaCantidad) => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venta-detalle/${nroRenglonDV}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nuevaCantidad }),
-  });
-
-  if (res.ok) {
-    const updatedDetalleVenta = ventaSeleccionada.detalleVenta.map(d =>
-      d.nroRenglonDV === nroRenglonDV
-        ? { 
-            ...d, 
-            cantidad: nuevaCantidad, 
-            montoDetalleVenta: nuevaCantidad * d.precioUnitario // recalcular
-          }
-        : d
-    );
-
-    const updatedVenta = {
-      ...ventaSeleccionada,
-      detalleVenta: updatedDetalleVenta,
-      montoTotalVenta: updatedDetalleVenta.reduce((total, d) => total + d.montoDetalleVenta, 0),
-    };
-
-    setVentaSeleccionada(updatedVenta);
-    setEditandoIndex(null);
-
-    onSuccess?.(); // si querés que recargue la lista general
-  } else {
-    alert('Error al actualizar la cantidad.');
-  }
-};
-
-
- const handleEliminarArticulo = async (nroRenglonDV) => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venta-detalle/${nroRenglonDV}`, {
-    method: 'DELETE',
-  });
-
-  if (res.ok) {
-    const updatedDetalleVenta = ventaSeleccionada.detalleVenta.filter(
-      (d) => d.nroRenglonDV !== nroRenglonDV
-    );
-
-    const updatedMontoTotal = updatedDetalleVenta.reduce(
-      (total, d) => total + d.montoDetalleVenta,
-      0
-    );
-
-    setVentaSeleccionada({
-      ...ventaSeleccionada,
-      detalleVenta: updatedDetalleVenta,
-      montoTotalVenta: updatedMontoTotal,
+  const handleEditarArticulo = async (nroRenglonDV, nuevaCantidad) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venta-detalle/${nroRenglonDV}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nuevaCantidad }),
     });
 
-    onSuccess?.(); // opcional si querés actualizar lista general
+    if (res.ok) {
+      const updatedDetalleVenta = ventaSeleccionada.detalleVenta.map((d) =>
+        d.nroRenglonDV === nroRenglonDV
+          ? {
+              ...d,
+              cantidad: nuevaCantidad,
+              montoDetalleVenta: nuevaCantidad * d.precioUnitario,
+            }
+          : d
+      );
 
-  } else {
-    alert("Error al eliminar el artículo");
-  }
-};
+      const updatedVenta = {
+        ...ventaSeleccionada,
+        detalleVenta: updatedDetalleVenta,
+        montoTotalVenta: updatedDetalleVenta.reduce((total, d) => total + d.montoDetalleVenta, 0),
+      };
+
+      setVentaSeleccionada(updatedVenta);
+      setEditandoIndex(null);
+      onSuccess?.();
+    } else {
+      alert('Error al actualizar la cantidad.');
+    }
+  };
+
+  const handleEliminarArticulo = async (nroRenglonDV) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venta-detalle/${nroRenglonDV}`, {
+      method: 'DELETE',
+    });
+
+    if (res.ok) {
+      const updatedDetalleVenta = ventaSeleccionada.detalleVenta.filter((d) => d.nroRenglonDV !== nroRenglonDV);
+      const updatedMontoTotal = updatedDetalleVenta.reduce((total, d) => total + d.montoDetalleVenta, 0);
+
+      setVentaSeleccionada({
+        ...ventaSeleccionada,
+        detalleVenta: updatedDetalleVenta,
+        montoTotalVenta: updatedMontoTotal,
+      });
+
+      onSuccess?.();
+    } else {
+      alert('Error al eliminar el artículo');
+    }
+  };
 
   const startEditing = (index, cantidad) => {
     setEditandoIndex(index);
@@ -106,12 +96,13 @@ export default function VentasList({ ventas, onSuccess }) {
         {ventas.map((venta) => (
           <div
             key={venta.nroVenta}
-            className="border border-gray-200 rounded p-4 shadow-sm bg-white cursor-pointer hover:scale-[1.01] transition-transform"
+            className="border-l-4 border-blue-500 bg-white rounded shadow p-4 hover:shadow-md cursor-pointer transition"
             onClick={() => setVentaSeleccionada(venta)}
           >
-            <h3 className="font-semibold text-black">
-              Venta #{venta.nroVenta} - Fecha: {new Date(venta.fechaVenta).toLocaleDateString()} - Monto: (${venta.montoTotalVenta})
+            <h3 className="text-gray-800 font-semibold">
+              Venta #{venta.nroVenta} - {new Date(venta.fechaVenta).toLocaleDateString()}
             </h3>
+            <p className="text-sm text-gray-600">Monto: ${venta.montoTotalVenta}</p>
           </div>
         ))}
       </div>
@@ -137,72 +128,73 @@ export default function VentasList({ ventas, onSuccess }) {
             >
               <motion.div
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative"
+                className="bg-white max-w-lg w-full p-6 rounded-lg shadow-xl relative"
               >
                 <button
                   onClick={() => setVentaSeleccionada(null)}
                   className="absolute top-4 right-4 text-gray-600 hover:text-gray-800"
-                  title="Cerrar"
                 >
                   <X className="w-5 h-5" />
                 </button>
 
-                <h2 className="text-xl text-black font-bold mb-2">
+                <h2 className="text-xl font-bold text-gray-800 mb-2">
                   Venta #{ventaSeleccionada.nroVenta}
                 </h2>
-                <p className="mb-2 text-black">
+                <p className="text-sm text-gray-600 mb-1">
                   Fecha: {new Date(ventaSeleccionada.fechaVenta).toLocaleDateString()}
                 </p>
-                <p className="mb-4 text-black">
-                  Monto total: <span className="font-semibold">${ventaSeleccionada.montoTotalVenta}</span>
+                <p className="mb-4 font-medium text-gray-800">
+                  Total: ${ventaSeleccionada.montoTotalVenta}
                 </p>
 
-                <h3 className="font-semibold mb-2 text-black">Artículos Vendidos:</h3>
-                <ul className="text-sm text-black space-y-4">
+                <h3 className="font-semibold mb-2 text-gray-700">Artículos Vendidos:</h3>
+                <ul className="space-y-3 divide-y divide-gray-200">
                   {ventaSeleccionada.detalleVenta.map((detalle, index) => (
-                    <li
-                      key={detalle.articulo.codArticulo}
-                      className="flex justify-between items-start border-b pb-2"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium">{detalle.articulo.nombreArt}</p>
-                        <div className="mt-1 space-y-1 text-sm">
-                          <div><strong>Código:</strong> {detalle.articulo.codArticulo}</div>
-                          <div>
-                            <strong>Cantidad:</strong>{" "}
-                            {editandoIndex === index ? (
+                    <li key={detalle.nroRenglonDV} className="pt-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-gray-800 font-medium">{detalle.articulo.nombreArt}</p>
+                          <p className="text-sm text-gray-600">
+                            Código: {detalle.articulo.codArticulo}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Cantidad: {editandoIndex === index ? (
                               <input
                                 type="number"
                                 value={newCantidad}
                                 onChange={(e) => setNewCantidad(e.target.value)}
-                                className="border rounded px-1 ml-2 py-1"
+                                className="border rounded px-2 py-1 w-16 ml-2"
                               />
                             ) : (
                               detalle.cantidad
                             )}
-                          </div>
-                          <div><strong>Subtotal:</strong> ${detalle.montoDetalleVenta}</div>
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Subtotal: ${detalle.montoDetalleVenta}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-1">
+                          {editandoIndex === index ? (
+                            <>
+                              <button onClick={() => saveEditing(detalle)} className="text-green-600 hover:text-green-800">
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => setEditandoIndex(null)} className="text-gray-500 hover:text-gray-700">
+                                <X className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <button onClick={() => startEditing(index, detalle.cantidad)} className="text-blue-600 hover:text-blue-800">
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                          )}
+
+                          <button onClick={() => handleEliminarArticulo(detalle.nroRenglonDV)} className="text-red-600 hover:text-red-800">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
-
-                      {editandoIndex === index ? (
-                        <>
-                          <button onClick={() => saveEditing(detalle)} className="text-green-600 hover:text-green-800 ml-2">
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => setEditandoIndex(null)} className="text-gray-600 hover:text-gray-800 ml-2">
-                            <X className="w-4 h-4" />
-                          </button>
-                        </>
-                      ) : (
-                        <button onClick={() => startEditing(index, detalle.cantidad)} className="text-blue-600 hover:text-blue-800 ml-2">
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                      )}
-
-                      <button onClick={() => handleEliminarArticulo(detalle.nroRenglonDV)} className="text-red-600 hover:text-red-800 ml-2">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
                     </li>
                   ))}
                 </ul>
@@ -211,8 +203,7 @@ export default function VentasList({ ventas, onSuccess }) {
                   onClick={() => handleEliminarVenta(ventaSeleccionada.nroVenta)}
                   className="mt-6 flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
                 >
-                  <Trash2 className="w-4 h-4" />
-                  Eliminar venta
+                  <Trash2 className="w-5 h-5" /> Eliminar venta
                 </button>
               </motion.div>
             </motion.div>
