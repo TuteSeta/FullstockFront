@@ -9,7 +9,7 @@ export default function VentasList({ ventas, onSuccess }) {
   const [editandoIndex, setEditandoIndex] = useState(null);
   const [newCantidad, setNewCantidad] = useState("");
 
-  if (!ventas.length) {
+  if (!ventas || !Array.isArray(ventas) || !ventas.length) {
     return <p className="text-gray-600">No hay ventas registradas.</p>;
   }
 
@@ -100,7 +100,7 @@ export default function VentasList({ ventas, onSuccess }) {
             onClick={() => setVentaSeleccionada(venta)}
           >
             <h3 className="text-gray-800 font-semibold">
-              Venta #{venta.nroVenta} - {new Date(venta.fechaVenta).toLocaleDateString()}
+              Venta #{venta.nroVenta} - {venta.fechaVenta ? new Date(venta.fechaVenta).toLocaleDateString() : ''}
             </h3>
             <p className="text-sm text-gray-600">Monto: ${venta.montoTotalVenta}</p>
           </div>
@@ -141,7 +141,7 @@ export default function VentasList({ ventas, onSuccess }) {
                   Venta #{ventaSeleccionada.nroVenta}
                 </h2>
                 <p className="text-sm text-gray-600 mb-1">
-                  Fecha: {new Date(ventaSeleccionada.fechaVenta).toLocaleDateString()}
+                  Fecha: {ventaSeleccionada.fechaVenta ? new Date(ventaSeleccionada.fechaVenta).toLocaleDateString() : ''}
                 </p>
                 <p className="mb-4 font-medium text-gray-800">
                   Total: ${ventaSeleccionada.montoTotalVenta}
@@ -149,13 +149,13 @@ export default function VentasList({ ventas, onSuccess }) {
 
                 <h3 className="font-semibold mb-2 text-gray-700">Artículos Vendidos:</h3>
                 <ul className="space-y-3 divide-y divide-gray-200">
-                  {ventaSeleccionada.detalleVenta.map((detalle, index) => (
+                  {ventaSeleccionada.detalleVenta?.map((detalle, index) => (
                     <li key={detalle.nroRenglonDV} className="pt-2">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="text-gray-800 font-medium">{detalle.articulo.nombreArt}</p>
+                          <p className="text-gray-800 font-medium">{detalle.articulo?.nombreArt}</p>
                           <p className="text-sm text-gray-600">
-                            Código: {detalle.articulo.codArticulo}
+                            Código: {detalle.articulo?.codArticulo}
                           </p>
                           <p className="text-sm text-gray-600">
                             Cantidad: {editandoIndex === index ? (
