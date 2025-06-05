@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Swal from 'sweetalert2';
 
 type Articulo = {
   codArticulo: number;
@@ -50,10 +51,22 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
     if (res.ok) {
       setFormData({ codArticulo: '', precioUnitarioAP: '', cargoPedidoAP: '', demoraEntregaAP: '' });
       onSuccess();
+      Swal.fire({
+        icon: 'success',
+        title: 'Artículo asignado',
+        text: 'El artículo fue asignado correctamente al proveedor.',
+        confirmButtonColor: '#3085d6',
+      });
     } else {
-      alert('Error al asignar artículo');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al asignar artículo',
+        text: 'Verificá los datos o intentá nuevamente.',
+        confirmButtonColor: '#d33',
+      });
     }
   };
+
 
   return (
     <form onSubmit={handleSubmit} className="mt-6" onClick={(e) => e.stopPropagation()}>
