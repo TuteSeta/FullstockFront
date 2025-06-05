@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-
+import Swal from 'sweetalert2';
 type Props = {
   onSuccess: () => void;
 };
@@ -20,8 +20,19 @@ export default function ProveedoresForm({ onSuccess }: Props) {
     if (res.ok) {
       setNombre('');
       onSuccess();
+      Swal.fire({
+        icon: 'success',
+        title: 'Proveedor creado',
+        text: `"${nombre}" se creó correctamente.`,
+        confirmButtonColor: '#3085d6',
+      });
     } else {
-      alert('Error al crear el proveedor');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al crear proveedor',
+        text: 'Verificá los datos o intentá nuevamente.',
+        confirmButtonColor: '#d33',
+      });
     }
   };
 

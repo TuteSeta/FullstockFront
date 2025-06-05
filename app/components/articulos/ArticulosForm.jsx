@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 
 export default function ArticuloForm({ articulo, onSuccess }) {
   const [formData, setFormData] = useState({
@@ -76,10 +77,10 @@ export default function ArticuloForm({ articulo, onSuccess }) {
       }));
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const dataToSend = { ...formData };
 
     if (modeloSeleccionado === 'loteFijo') {
@@ -91,19 +92,22 @@ export default function ArticuloForm({ articulo, onSuccess }) {
       delete dataToSend.modeloInventarioLoteFijo;
     }
 
-    const url = articulo 
+    const url = articulo
       ? `${process.env.NEXT_PUBLIC_API_URL}/articulos/${articulo.codArticulo}`
       : `${process.env.NEXT_PUBLIC_API_URL}/articulos`;
 
     const method = articulo ? 'PUT' : 'POST';
 
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dataToSend),
-    });
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToSend),
+      });
 
-    if (res.ok) {
+      if (!res.ok) throw new Error('Error al guardar');
+
+      // Reset y feedback
       setFormData({
         nombreArt: '',
         descripcion: '',
@@ -128,9 +132,28 @@ export default function ArticuloForm({ articulo, onSuccess }) {
         }
       });
       setModeloSeleccionado('');
+
+      Swal.fire({
+        icon: 'success',
+        title: articulo ? 'Artículo actualizado' : 'Artículo creado',
+        text: articulo
+          ? `"${formData.nombreArt}" fue editado correctamente.`
+          : `"${formData.nombreArt}" fue creado con éxito.`,
+        confirmButtonColor: '#3085d6',
+      });
+
       onSuccess();
+    } catch (error) {
+      console.error('Error al guardar el artículo:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Ocurrió un problema al guardar el artículo. Verificá los datos e intentá de nuevo.',
+        confirmButtonColor: '#d33',
+      });
     }
   };
+
 
   return (
     <>
