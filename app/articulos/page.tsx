@@ -8,6 +8,7 @@ import BackButton from '../components/BackButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import ArticuloFiltro from '../components/articulos/ArticuloFiltro';
 import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
 
 
 type Articulo = {
@@ -45,15 +46,45 @@ export default function ArticulosPage() {
   };
 
   const handleDelete = async (articulo: Articulo) => {
+    const confirmar = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar el artículo "${articulo.nombreArt}"`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#aaa',
+    });
+
+    if (!confirmar.isConfirmed) return;
+
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${articulo.codArticulo}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${articulo.codArticulo}`, {
         method: 'DELETE',
       });
-      fetchArticulos();
+
+      if (!res.ok) throw new Error('Falló el DELETE');
+
+      await fetchArticulos();
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Artículo eliminado',
+        text: `"${articulo.nombreArt}" fue eliminado correctamente.`,
+        confirmButtonColor: '#3085d6',
+      });
     } catch (error) {
       console.error('Error eliminando artículo:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al eliminar',
+        text: 'No se pudo eliminar el artículo. Puede estar relacionado con ventas u órdenes.',
+        confirmButtonColor: '#d33',
+      });
     }
   };
+
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,49 +97,86 @@ export default function ArticulosPage() {
       const sheet = workbook.Sheets[sheetName];
       const json = XLSX.utils.sheet_to_json(sheet);
 
-      // Convertimos cada fila a objeto tipo artículo
-      const articulosParseados = (json as any[]).map((row) => {
+      let registrosExitosos = 0;
+      let registrosFallidos: string[] = [];
+
+      const articulosParseados = (json as any[]).map((row, idx) => {
         return {
-          nombreArt: row['nombreArt'] || '',
-          descripcion: row['descripcion'] || '',
-          demanda: Number(row['demanda'] || 0),
-          cantArticulo: Number(row['cantArticulo'] || 0),
-          cantMaxArticulo: Number(row['cantMaxArticulo'] || 0),
-          costoAlmacenamiento: Number(row['costoAlmacenamiento'] || 0),
-          costoMantenimiento: Number(row['costoMantenimiento'] || 0),
-          costoPedido: Number(row['costoPedido'] || 0),
-          costoCompra: Number(row['costoCompra'] || 0),
-          desviacionDemandaLArticulo: Number(row['desviacionDemandaLArticulo'] || 0),
-          desviacionDemandaTArticulo: Number(row['desviacionDemandaTArticulo'] || 0),
-          nivelServicioDeseado: Number(row['nivelServicioDeseado'] || 0),
-          modeloInventarioLoteFijo: row['loteOptimo'] != null ? {
-            loteOptimo: Number(row['loteOptimo']),
-            puntoPedido: Number(row['puntoPedido']),
-            stockSeguridadLF: Number(row['stockSeguridadLF'])
-          } : undefined,
-          modeloInventarioIntervaloFijo: row['intervaloTiempo'] != null ? {
-            intervaloTiempo: Number(row['intervaloTiempo']),
-            stockSeguridadIF: Number(row['stockSeguridadIF'])
-          } : undefined
+          index: idx + 2, // para indicar la fila del Excel (asumiendo encabezados)
+          payload: {
+            nombreArt: row['nombreArt'] || '',
+            descripcion: row['descripcion'] || '',
+            demanda: Number(row['demanda'] || 0),
+            cantArticulo: Number(row['cantArticulo'] || 0),
+            cantMaxArticulo: Number(row['cantMaxArticulo'] || 0),
+            costoAlmacenamiento: Number(row['costoAlmacenamiento'] || 0),
+            costoMantenimiento: Number(row['costoMantenimiento'] || 0),
+            costoPedido: Number(row['costoPedido'] || 0),
+            costoCompra: Number(row['costoCompra'] || 0),
+            desviacionDemandaLArticulo: Number(row['desviacionDemandaLArticulo'] || 0),
+            desviacionDemandaTArticulo: Number(row['desviacionDemandaTArticulo'] || 0),
+            nivelServicioDeseado: Number(row['nivelServicioDeseado'] || 0),
+            modeloInventarioLoteFijo: row['loteOptimo'] != null ? {
+              loteOptimo: Number(row['loteOptimo']),
+              puntoPedido: Number(row['puntoPedido']),
+              stockSeguridadLF: Number(row['stockSeguridadLF'])
+            } : undefined,
+            modeloInventarioIntervaloFijo: row['intervaloTiempo'] != null ? {
+              intervaloTiempo: Number(row['intervaloTiempo']),
+              stockSeguridadIF: Number(row['stockSeguridadIF'])
+            } : undefined
+          }
         };
       });
 
-      // Enviar en lote
-      const requests = articulosParseados.map((art) =>
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(art),
-        })
-      );
-      await Promise.all(requests);
+      for (const row of articulosParseados) {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(row.payload),
+          });
+
+          if (!res.ok) throw new Error('Error al crear artículo');
+
+          registrosExitosos++;
+        } catch (err) {
+          console.error(err);
+          registrosFallidos.push(`Fila ${row.index} (${row.payload.nombreArt})`);
+        }
+      }
+
       fetchArticulos();
-      alert('Artículos importados correctamente.');
+
+      if (registrosExitosos > 0) {
+        Swal.fire({
+          icon: registrosFallidos.length > 0 ? 'warning' : 'success',
+          title: registrosFallidos.length > 0 ? 'Importación parcial' : '¡Importación exitosa!',
+          text:
+            registrosFallidos.length > 0
+              ? `Se importaron ${registrosExitosos} artículos correctamente. Fallaron ${registrosFallidos.length}.`
+              : 'Todos los artículos fueron importados correctamente.',
+          confirmButtonColor: '#3085d6',
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error en la importación',
+          text: 'No se pudo importar ningún artículo. Verifica el formato del archivo.',
+          confirmButtonColor: '#d33',
+        });
+      }
     } catch (err) {
       console.error('Error al procesar archivo Excel:', err);
-      alert('Hubo un error al importar los artículos.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error inesperado',
+        text: 'Ocurrió un error al leer o procesar el archivo Excel.',
+        confirmButtonColor: '#d33',
+      });
     }
   };
+
 
 
   const articulosFiltrados = articulos.filter((a) =>

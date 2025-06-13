@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import ArticulosProveedorList from './ArticulosProveedorList';
 import ArticuloProveedorForm from './ArticuloProveedorForm';
+import Swal from 'sweetalert2';
 
 type Proveedor = {
   codProveedor: number;

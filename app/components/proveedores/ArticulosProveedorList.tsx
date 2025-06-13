@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Pencil, Check, X, Trash2 } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 type ArticuloProveedor = {
   codArticulo: number;
@@ -55,18 +56,40 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
   };
 
   const eliminarArticuloProveedor = async (codArticulo: number) => {
-    const confirmar = window.confirm('¿Estás seguro de que querés eliminar este artículo del proveedor?');
-    if (!confirmar) return;
+    const confirmar = await Swal.fire({
+      title: '¿Eliminar artículo?',
+      text: 'Esta acción eliminará la asociación con el proveedor.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#aaa',
+    });
+
+    if (!confirmar.isConfirmed) return;
 
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos/${proveedorId}/${codArticulo}`, {
         method: 'DELETE',
       });
       await onDelete();
+      Swal.fire({
+        icon: 'success',
+        title: 'Eliminado',
+        text: 'El artículo fue desvinculado correctamente.',
+        confirmButtonColor: '#3085d6',
+      });
     } catch {
-      alert('Error al eliminar el artículo del proveedor');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al eliminar',
+        text: 'Ocurrió un error. Intenta nuevamente.',
+        confirmButtonColor: '#d33',
+      });
     }
   };
+
 
   return (
     <div className="mt-6">
