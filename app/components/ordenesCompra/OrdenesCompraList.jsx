@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Pencil, Check, X, Trash2 } from "lucide-react";
 
@@ -8,6 +8,24 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
   const [editandoIndex, setEditandoIndex] = useState(null);
   const [newCantidad, setNewCantidad] = useState("");
+  const [mostrarCanceladas, setMostrarCanceladas] = useState(false);
+
+  // Efecto para mantener sincronizada la orden seleccionada
+  useEffect(() => {
+    if (ordenSeleccionada) {
+      const ordenActualizada = ordenes.find(
+        o => o.nroOrdenCompra === ordenSeleccionada.nroOrdenCompra
+      );
+      if (ordenActualizada) setOrdenSeleccionada(ordenActualizada);
+      else setOrdenSeleccionada(null);
+    }
+    // eslint-disable-next-line
+  }, [ordenes]);
+
+  // Cambia el filtro según el estado
+  const ordenesFiltradas = mostrarCanceladas
+    ? ordenes.filter(o => o.fechaHoraBajaOrdenCompra)
+    : ordenes.filter(o => !o.fechaHoraBajaOrdenCompra);
 
   if (!ordenes.length) {
     return <p className="text-black">No hay órdenes registradas.</p>;
@@ -32,7 +50,7 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
 
   // Editar cantidad de un artículo en la orden
   const handleEditarArticulo = async (nroRenglonDOC, nuevaCantidad) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes/detalle/${nroRenglonDOC}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes-detalle/${nroRenglonDOC}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nuevaCantidad }),
@@ -42,6 +60,7 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
       // Actualiza el detalle en el estado local (opcional, puedes recargar todo)
       onSuccess?.();
       setEditandoIndex(null);
+
     } else {
       alert("Error al actualizar la cantidad.");
     }
@@ -49,7 +68,7 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
 
   // Eliminar artículo de la orden
   const handleEliminarArticulo = async (nroOrdenCompra, nroRenglonDOC) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes/${nroOrdenCompra}/detalle/${nroRenglonDOC}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes-detalle/${nroRenglonDOC}`, {
       method: "DELETE",
     });
 
@@ -69,10 +88,18 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
     handleEditarArticulo(detalle.nroRenglonDOC, Number(newCantidad));
   };
 
+
   return (
     <>
+      <button
+        className="mb-4 px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+        onClick={() => setMostrarCanceladas(m => !m)}
+      >
+        {mostrarCanceladas ? "Ver órdenes activas" : "Ver órdenes canceladas"}
+      </button>
+
       <div className="grid gap-4">
-        {ordenes.map((orden) => (
+        {ordenesFiltradas.map((orden) => (
           <div
             key={orden.nroOrdenCompra}
             className="border border-gray-200 rounded p-4 shadow-sm bg-white cursor-pointer hover:scale-[1.01] transition-transform"

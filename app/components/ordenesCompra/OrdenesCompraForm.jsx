@@ -40,6 +40,7 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
   const agregarArticulo = () => {
     if (!codArticulo || !cantidadDOC) return;
     const articulo = articulos.find(a => a.codArticulo === parseInt(codArticulo));
+    const articuloProveedor = articulosProveedor.find(a => a.codArticulo === parseInt(codArticulo));
     if (!articulo) return;
     setDetalleOC(prev => [
       ...prev,
@@ -47,7 +48,7 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         codArticulo: articulo.codArticulo,
         nombreArt: articulo.nombreArt,
         cantidadDOC: parseInt(cantidadDOC),
-        montoDOC: articulo.precioUnitarioAP * parseInt(cantidadDOC), // solo para mostrar
+        montoDOC: articuloProveedor.precioUnitarioAP * parseInt(cantidadDOC), // solo para mostrar
       }
     ]);
     setCodArticulo("");
@@ -143,7 +144,7 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         {precioActual !== null && cantidadDOC ? (
           <div className="flex items-center text-gray-700">
             <span className="ml-2">
-              Precio: ${precioActual} | Monto: ${precioActual * cantidadDOC}
+              Precio: ${precioActual} | Monto: ${Number(precioActual) * Number(cantidadDOC)}
             </span>
           </div>
         ) : null}
