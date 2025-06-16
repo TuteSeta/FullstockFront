@@ -18,7 +18,7 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
   const [articulosDisponibles, setArticulosDisponibles] = useState<Articulo[]>([]);
   const [formData, setFormData] = useState({
     codArticulo: '',
-    precioUnitarioAP: '',
+    costoUnitarioAP: '',
     cargoPedidoAP: '',
     demoraEntregaAP: '',
   });
@@ -42,14 +42,14 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
       body: JSON.stringify({
         codProveedor: proveedorId,
         codArticulo: Number(formData.codArticulo),
-        precioUnitarioAP: Number(formData.precioUnitarioAP),
+        costoUnitarioAP: Number(formData.costoUnitarioAP),
         cargoPedidoAP: Number(formData.cargoPedidoAP),
         demoraEntregaAP: Number(formData.demoraEntregaAP),
       }),
     });
 
     if (res.ok) {
-      setFormData({ codArticulo: '', precioUnitarioAP: '', cargoPedidoAP: '', demoraEntregaAP: '' });
+      setFormData({ codArticulo: '', costoUnitarioAP: '', cargoPedidoAP: '', demoraEntregaAP: '' });
       onSuccess();
       Swal.fire({
         icon: 'success',
@@ -96,8 +96,8 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
           <input
             type="number"
             className="w-full border rounded px-2 py-1"
-            value={formData.precioUnitarioAP}
-            onChange={(e) => setFormData({ ...formData, precioUnitarioAP: e.target.value })}
+            value={formData.costoUnitarioAP}
+            onChange={(e) => setFormData({ ...formData, costoUnitarioAP: e.target.value })}
             required
           />
         </div>
@@ -165,8 +165,8 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
                 <input
                   type="number"
                   className="w-24 border rounded px-2 py-1"
-                  value={formData.precioUnitarioAP}
-                  onChange={(e) => setFormData({ ...formData, precioUnitarioAP: e.target.value })}
+                  value={formData.costoUnitarioAP}
+                  onChange={(e) => setFormData({ ...formData, costoUnitarioAP: e.target.value })}
                   required
                 />
               </td>

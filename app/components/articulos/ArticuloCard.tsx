@@ -7,9 +7,12 @@ type Articulo = {
   nombreArt: string;
   descripcion: string;
   cantArticulo: number;
-  cantMaxArticulo: number;
+  precioArticulo: number;
   modeloInventarioIntervaloFijo?: { stockSeguridadIF: number };
-  modeloInventarioLoteFijo?: { stockSeguridadLF: number };
+  modeloInventarioLoteFijo?: { stockSeguridadLF: number,loteOptimo: number, puntoPedido:number, };
+  proveedorPredeterminado?: {
+    nombreProveedor: string;
+  };
 };
 
 export default function ArticuloCard({
@@ -44,12 +47,12 @@ export default function ArticuloCard({
           {articulo.codArticulo}
         </div>
         <div className="text-sm text-gray-700 sm:text-center">
-          <span className="block sm:hidden font-semibold">Cantidad: </span>
-          {articulo.cantArticulo}
+          <span className="block sm:hidden font-semibold">Precio: </span>
+          {articulo.precioArticulo}
         </div>
         <div className="text-sm text-gray-700 sm:text-center">
-          <span className="block sm:hidden font-semibold">Cantidad Máx.: </span>
-          {articulo.cantMaxArticulo}
+          <span className="block sm:hidden font-semibold">Cantidad: </span>
+          {articulo.cantArticulo}
         </div>
         <div className="text-sm text-gray-700 sm:text-center">
           <span className="block sm:hidden font-semibold">Modelo: </span>
@@ -97,14 +100,28 @@ export default function ArticuloCard({
                   <strong>Cantidad Actual:</strong> {articulo.cantArticulo}
                 </p>
                 <p>
-                  <strong>Cantidad Máxima:</strong> {articulo.cantMaxArticulo}
+                  <strong>Precio articulo:</strong> {articulo.precioArticulo}
                 </p>
                 <p>
                   <strong>Modelo de Inventario:</strong> {modelo}
                 </p>
                 <p>
-                  <strong>Stock de Seguridad:</strong> {stockSeguridad}
+                  <strong>Proveedor Predeterminado:</strong>{' '}
+                  {articulo.proveedorPredeterminado?.nombreProveedor ?? 'No asignado'}
                 </p>
+                {articulo.modeloInventarioLoteFijo && (
+                  <>
+                    <p>
+                      <strong>Lote Óptimo:</strong> {articulo.modeloInventarioLoteFijo.loteOptimo}
+                    </p>
+                    <p>
+                      <strong>Punto de Pedido:</strong> {articulo.modeloInventarioLoteFijo.puntoPedido}
+                    </p>
+                    <p>
+                      <strong>Stock de Seguridad:</strong> {articulo.modeloInventarioLoteFijo.stockSeguridadLF}
+                    </p>
+                  </>
+                )}
 
                 <div className="mt-4 flex flex-wrap justify-end gap-2">
                   <button

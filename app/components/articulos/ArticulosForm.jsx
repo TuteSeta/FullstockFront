@@ -8,14 +8,12 @@ export default function ArticuloForm({ articulo, onSuccess }) {
     descripcion: '',
     demanda: '',
     cantArticulo: '',
-    cantMaxArticulo: '',
-    costoAlmacenamiento: '',
+    precioArticulo: '',
     costoMantenimiento: '',
-    costoPedido: '',
-    costoCompra: '',
     desviacionDemandaLArticulo: '',
     desviacionDemandaTArticulo: '',
     nivelServicioDeseado: '',
+    codProveedorPredeterminado: '',
     modeloInventarioLoteFijo: {
       loteOptimo: '',
       puntoPedido: '',
@@ -28,16 +26,28 @@ export default function ArticuloForm({ articulo, onSuccess }) {
   });
 
   const [modeloSeleccionado, setModeloSeleccionado] = useState('');
+  const [proveedores, setProveedores] = useState([]);
 
-  // Prellenar el formulario si "articulo" es definido (modo edición)
   useEffect(() => {
     if (articulo) {
-      setFormData({ ...articulo });
+      setFormData({
+        ...articulo,
+        codProveedorPredeterminado: articulo.proveedorPredeterminado?.codProveedor ?? '',
+      });
       setModeloSeleccionado(articulo.modeloInventarioLoteFijo ? 'loteFijo' : 'intervaloFijo');
     }
   }, [articulo]);
 
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedores`)
+      .then((res) => res.json())
+      .then(setProveedores)
+      .catch((err) => console.error('Error al cargar proveedores:', err));
+  }, []);
+
   const handleChange = (e) => {
+
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -53,7 +63,7 @@ export default function ArticuloForm({ articulo, onSuccess }) {
       modeloInventarioIntervaloFijo: {
         intervaloTiempo: '',
         stockSeguridadIF: ''
-      }
+      },
     }));
   };
 
@@ -81,15 +91,26 @@ export default function ArticuloForm({ articulo, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const dataToSend = { ...formData };
+    let codProv = Number(formData.codProveedorPredeterminado);
+    if (!codProv || isNaN(codProv)) codProv = null;
 
+    const dataToSend = {
+      ...formData,
+      codProveedorPredeterminado: codProv,
+      recalcularLoteFijo: modeloSeleccionado === 'loteFijo',
+    };
+
+    // Forzar estructura clara según modelo
     if (modeloSeleccionado === 'loteFijo') {
+      dataToSend.modeloSeleccionado = modeloSeleccionado;
       delete dataToSend.modeloInventarioIntervaloFijo;
     } else if (modeloSeleccionado === 'intervaloFijo') {
       delete dataToSend.modeloInventarioLoteFijo;
+      // datos de intervalo ya están en formData.modeloInventarioIntervaloFijo
     } else {
-      delete dataToSend.modeloInventarioIntervaloFijo;
       delete dataToSend.modeloInventarioLoteFijo;
+      delete dataToSend.modeloInventarioIntervaloFijo;
+      dataToSend.codProveedorPredeterminado = null;
     }
 
     const url = articulo
@@ -107,20 +128,18 @@ export default function ArticuloForm({ articulo, onSuccess }) {
 
       if (!res.ok) throw new Error('Error al guardar');
 
-      // Reset y feedback
+      // Reset
       setFormData({
         nombreArt: '',
         descripcion: '',
         demanda: '',
         cantArticulo: '',
-        cantMaxArticulo: '',
-        costoAlmacenamiento: '',
+        precioArticulo: '',
         costoMantenimiento: '',
-        costoPedido: '',
-        costoCompra: '',
         desviacionDemandaLArticulo: '',
         desviacionDemandaTArticulo: '',
         nivelServicioDeseado: '',
+        codProveedorPredeterminado: '',
         modeloInventarioLoteFijo: {
           loteOptimo: '',
           puntoPedido: '',
@@ -167,11 +186,8 @@ export default function ArticuloForm({ articulo, onSuccess }) {
           { name: 'descripcion', label: 'Descripción' },
           { name: 'demanda', label: 'Demanda', type: 'number' },
           { name: 'cantArticulo', label: 'Cantidad Articulo', type: 'number' },
-          { name: 'cantMaxArticulo', label: 'Cantidad Máxima Articulo', type: 'number' },
-          { name: 'costoAlmacenamiento', label: 'Costo Almacenamiento', type: 'number' },
+          { name: 'precioArticulo', label: 'Precio Articulo', type: 'number' },
           { name: 'costoMantenimiento', label: 'Costo Mantenimiento', type: 'number' },
-          { name: 'costoPedido', label: 'Costo Pedido', type: 'number' },
-          { name: 'costoCompra', label: 'Costo Compra', type: 'number' },
           { name: 'desviacionDemandaLArticulo', label: 'Desviación Demanda L Artículo', type: 'number' },
           { name: 'desviacionDemandaTArticulo', label: 'Desviación Demanda T Artículo', type: 'number' },
           { name: 'nivelServicioDeseado', label: 'Nivel Servicio Deseado', type: 'number' },
@@ -186,9 +202,23 @@ export default function ArticuloForm({ articulo, onSuccess }) {
             required
             className="border border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-black"
           />
+
         ))}
 
         {/* Selector de modelo de inventario*/}
+        <select
+          name="codProveedorPredeterminado"
+          value={formData.codProveedorPredeterminado ?? ''}
+          onChange={handleChange}
+          className="border border-gray-600 rounded px-3 py-2 bg-white text-black col-span-full"
+        >
+          <option value="">Seleccionar proveedor predeterminado</option>
+          {proveedores.map((prov) => (
+            <option key={prov.codProveedor} value={prov.codProveedor}>
+              {prov.nombreProveedor}
+            </option>
+          ))}
+        </select>
         <div className="col-span-full flex gap-4 items-center">
           <label className="font-semibold">Modelo de Inventario:</label>
           <label>
@@ -216,33 +246,9 @@ export default function ArticuloForm({ articulo, onSuccess }) {
         {/* Campos específicos del modelo de inventario */}
         {modeloSeleccionado === 'loteFijo' && (
           <>
-            <input
-              type="number"
-              name="loteOptimo"
-              placeholder="Lote Óptimo: "
-              value={formData.modeloInventarioLoteFijo.loteOptimo}
-              onChange={handleModeloFieldChange}
-              required
-              className="border border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-black col-span-full"
-            />
-            <input
-              type="number"
-              name="puntoPedido"
-              placeholder="Punto de Pedido: "
-              value={formData.modeloInventarioLoteFijo.puntoPedido}
-              onChange={handleModeloFieldChange}
-              required
-              className="border border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-black col-span-full"
-            />
-            <input
-              type="number"
-              name="stockSeguridadLF"
-              placeholder="Stock de Seguridad (Lote fijo): "
-              value={formData.modeloInventarioLoteFijo.stockSeguridadLF}
-              onChange={handleModeloFieldChange}
-              required
-              className="border border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-black col-span-full"
-            />
+            <p className="text-sm italic text-gray-500 col-span-full">
+              El lote óptimo, punto de pedido y stock de seguridad serán calculados automáticamente por el sistema.
+            </p>
           </>
         )}
 

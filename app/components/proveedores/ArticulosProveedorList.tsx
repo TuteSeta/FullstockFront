@@ -10,7 +10,7 @@ type ArticuloProveedor = {
     nombreArt: string;
     descripcion: string;
   };
-  precioUnitarioAP: number;
+  costoUnitarioAP: number;
   cargoPedidoAP: number;
   demoraEntregaAP: number;
 };
@@ -34,7 +34,7 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
   const comenzarEdicion = (art: ArticuloProveedor) => {
     setEditandoId(art.codArticulo);
     setFormData({
-      precioUnitarioAP: art.precioUnitarioAP,
+      costoUnitarioAP: art.costoUnitarioAP,
       cargoPedidoAP: art.cargoPedidoAP,
       demoraEntregaAP: art.demoraEntregaAP,
     });
@@ -100,7 +100,7 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
         {articulosPagina.map((rel) => (
           <div key={rel.codArticulo} className="bg-white shadow rounded-lg p-4 space-y-2 text-sm">
             <p><strong>Artículo:</strong> {rel.articulo.nombreArt}</p>
-            <p><strong>Precio de compra:</strong> ${rel.precioUnitarioAP.toFixed(2)}</p>
+            <p><strong>Precio de compra:</strong> ${rel.costoUnitarioAP.toFixed(2)}</p>
             <p><strong>Cargo pedido:</strong> ${rel.cargoPedidoAP.toFixed(2)}</p>
             <p><strong>Demora entrega:</strong> {rel.demoraEntregaAP} días</p>
             <div className="flex gap-2">
@@ -143,13 +143,13 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
                       <input
                         type="number"
                         className="border rounded px-2 py-1 w-24"
-                        value={formData.precioUnitarioAP ?? ''}
+                        value={formData.costoUnitarioAP ?? ''}
                         onChange={(e) =>
-                          setFormData({ ...formData, precioUnitarioAP: parseFloat(e.target.value) })
+                          setFormData({ ...formData, costoUnitarioAP: parseFloat(e.target.value) })
                         }
                       />
                     ) : (
-                      `$${rel.precioUnitarioAP.toFixed(2)}`
+                      `$${rel.costoUnitarioAP.toFixed(2)}`
                     )}
                   </td>
                   <td className="px-4 py-2">
