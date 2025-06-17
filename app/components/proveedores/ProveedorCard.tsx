@@ -19,7 +19,7 @@ export type ArticuloProveedor = {
     nombreArt: string;
     descripcion: string;
   };
-  precioUnitarioAP: number;
+  costoUnitarioAP: number;
   cargoPedidoAP: number;
   demoraEntregaAP: number;
 };

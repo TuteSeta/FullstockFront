@@ -10,7 +10,7 @@ type ArticuloProveedor = {
     nombreArt: string;
     descripcion: string;
   };
-  precioUnitarioAP: number;
+  costoUnitarioAP: number;
   cargoPedidoAP: number;
   demoraEntregaAP: number;
 };
@@ -34,26 +34,63 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
   const comenzarEdicion = (art: ArticuloProveedor) => {
     setEditandoId(art.codArticulo);
     setFormData({
-      precioUnitarioAP: art.precioUnitarioAP,
+      costoUnitarioAP: art.costoUnitarioAP,
       cargoPedidoAP: art.cargoPedidoAP,
       demoraEntregaAP: art.demoraEntregaAP,
     });
   };
 
-  const guardarCambios = async (codArticulo: number) => {
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos/${proveedorId}/${codArticulo}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      setEditandoId(null);
-      setFormData({});
-      await onDelete();
-    } catch {
-      alert('Error al actualizar los datos');
-    }
-  };
+const guardarCambios = async (codArticulo: number) => {
+  try {
+    // 1. Actualizar la relación proveedor-artículo
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos/${proveedorId}/${codArticulo}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        codProveedor: proveedorId,
+        codArticulo: codArticulo,
+        ...formData,
+      }),
+    });
+
+    // 2. Esperar un poco para asegurar que la relación se guardó
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // 3. Obtener el artículo actualizado
+    const articuloRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${codArticulo}`);
+    if (!articuloRes.ok) throw new Error('No se pudo obtener el artículo');
+    const articulo = await articuloRes.json();
+
+    // 4. Hacer PUT al artículo para recalcular el modelo de lote fijo
+    const bodyPut = {
+      nombreArt: articulo.nombreArt,
+      descripcion: articulo.descripcion,
+      demanda: articulo.demanda,
+      precioArticulo: articulo.precioArticulo,
+      cantArticulo: articulo.cantArticulo,
+      costoMantenimiento: articulo.costoMantenimiento,
+      desviacionDemandaLArticulo: articulo.desviacionDemandaLArticulo,
+      desviacionDemandaTArticulo: articulo.desviacionDemandaTArticulo,
+      nivelServicioDeseado: articulo.nivelServicioDeseado,
+      modeloInventarioLoteFijo: articulo.modeloInventarioLoteFijo,
+      modeloInventarioIntervaloFijo: articulo.modeloInventarioIntervaloFijo,
+      codProveedorPredeterminado: proveedorId,
+      recalcularLoteFijo: true
+    };
+
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${codArticulo}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyPut),
+    });
+
+    setEditandoId(null);
+    setFormData({});
+    await onDelete();
+  } catch {
+    alert('Error al actualizar los datos');
+  }
+};
 
   const eliminarArticuloProveedor = async (codArticulo: number) => {
     const confirmar = await Swal.fire({
@@ -100,7 +137,7 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
         {articulosPagina.map((rel) => (
           <div key={rel.codArticulo} className="bg-white shadow rounded-lg p-4 space-y-2 text-sm">
             <p><strong>Artículo:</strong> {rel.articulo.nombreArt}</p>
-            <p><strong>Precio de compra:</strong> ${rel.precioUnitarioAP.toFixed(2)}</p>
+            <p><strong>Precio de compra:</strong> ${rel.costoUnitarioAP.toFixed(2)}</p>
             <p><strong>Cargo pedido:</strong> ${rel.cargoPedidoAP.toFixed(2)}</p>
             <p><strong>Demora entrega:</strong> {rel.demoraEntregaAP} días</p>
             <div className="flex gap-2">
@@ -143,13 +180,13 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
                       <input
                         type="number"
                         className="border rounded px-2 py-1 w-24"
-                        value={formData.precioUnitarioAP ?? ''}
+                        value={formData.costoUnitarioAP ?? ''}
                         onChange={(e) =>
-                          setFormData({ ...formData, precioUnitarioAP: parseFloat(e.target.value) })
+                          setFormData({ ...formData, costoUnitarioAP: parseFloat(e.target.value) })
                         }
                       />
                     ) : (
-                      `$${rel.precioUnitarioAP.toFixed(2)}`
+                      `$${rel.costoUnitarioAP.toFixed(2)}`
                     )}
                   </td>
                   <td className="px-4 py-2">

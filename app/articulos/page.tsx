@@ -16,9 +16,21 @@ type Articulo = {
   nombreArt: string;
   descripcion: string;
   cantArticulo: number;
-  cantMaxArticulo: number;
-  modeloInventario: string;
-  stockSeguridad: number;
+  precioArticulo: number;
+  costoMantenimiento: number;
+  demanda: number;
+  desviacionDemandaLArticulo: number;
+  desviacionDemandaTArticulo: number;
+  nivelServicioDeseado: number;
+  modeloInventarioLoteFijo?: {
+    loteOptimo: number;
+    puntoPedido: number;
+    stockSeguridadLF: number;
+  };
+  modeloInventarioIntervaloFijo?: {
+    intervaloTiempo: number;
+    stockSeguridadIF: number;
+  };
 };
 
 export default function ArticulosPage() {
@@ -33,7 +45,12 @@ export default function ArticulosPage() {
   const fetchArticulos = async () => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos`);
     const data = await res.json();
-    setArticulos(data);
+    if (Array.isArray(data)) {
+      setArticulos(data);
+    } else {
+      setArticulos([]);
+      console.error('Error al obtener artículos:', data);
+    }
   };
 
   useEffect(() => {
@@ -107,12 +124,9 @@ export default function ArticulosPage() {
             nombreArt: row['nombreArt'] || '',
             descripcion: row['descripcion'] || '',
             demanda: Number(row['demanda'] || 0),
+            precioArticulo: Number(row['precioArticulo'] || 0),
             cantArticulo: Number(row['cantArticulo'] || 0),
-            cantMaxArticulo: Number(row['cantMaxArticulo'] || 0),
-            costoAlmacenamiento: Number(row['costoAlmacenamiento'] || 0),
             costoMantenimiento: Number(row['costoMantenimiento'] || 0),
-            costoPedido: Number(row['costoPedido'] || 0),
-            costoCompra: Number(row['costoCompra'] || 0),
             desviacionDemandaLArticulo: Number(row['desviacionDemandaLArticulo'] || 0),
             desviacionDemandaTArticulo: Number(row['desviacionDemandaTArticulo'] || 0),
             nivelServicioDeseado: Number(row['nivelServicioDeseado'] || 0),
@@ -202,7 +216,7 @@ export default function ArticulosPage() {
         <BackButton />
 
         {/* Encabezado responsive */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 flex-wrap">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 mb-6 flex-wrap">
           <div className="flex items-center">
             <Boxes className="w-7 h-7 text-blue-600" />
             <h1 className="text-3xl font-bold ml-2">Gestión de artículos</h1>
@@ -243,7 +257,6 @@ export default function ArticulosPage() {
           <div>Nombre</div>
           <div className="text-center">Código</div>
           <div className="text-center">Cantidad</div>
-          <div className="text-center">Cantidad Máx.</div>
           <div className="text-center">Modelo</div>
           <div className="text-center">Stock Seguridad</div>
         </div>
