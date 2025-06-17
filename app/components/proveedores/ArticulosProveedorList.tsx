@@ -40,20 +40,57 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
     });
   };
 
-  const guardarCambios = async (codArticulo: number) => {
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos/${proveedorId}/${codArticulo}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      setEditandoId(null);
-      setFormData({});
-      await onDelete();
-    } catch {
-      alert('Error al actualizar los datos');
-    }
-  };
+const guardarCambios = async (codArticulo: number) => {
+  try {
+    // 1. Actualizar la relación proveedor-artículo
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos/${proveedorId}/${codArticulo}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        codProveedor: proveedorId,
+        codArticulo: codArticulo,
+        ...formData,
+      }),
+    });
+
+    // 2. Esperar un poco para asegurar que la relación se guardó
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // 3. Obtener el artículo actualizado
+    const articuloRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${codArticulo}`);
+    if (!articuloRes.ok) throw new Error('No se pudo obtener el artículo');
+    const articulo = await articuloRes.json();
+
+    // 4. Hacer PUT al artículo para recalcular el modelo de lote fijo
+    const bodyPut = {
+      nombreArt: articulo.nombreArt,
+      descripcion: articulo.descripcion,
+      demanda: articulo.demanda,
+      precioArticulo: articulo.precioArticulo,
+      cantArticulo: articulo.cantArticulo,
+      costoMantenimiento: articulo.costoMantenimiento,
+      desviacionDemandaLArticulo: articulo.desviacionDemandaLArticulo,
+      desviacionDemandaTArticulo: articulo.desviacionDemandaTArticulo,
+      nivelServicioDeseado: articulo.nivelServicioDeseado,
+      modeloInventarioLoteFijo: articulo.modeloInventarioLoteFijo,
+      modeloInventarioIntervaloFijo: articulo.modeloInventarioIntervaloFijo,
+      codProveedorPredeterminado: proveedorId,
+      recalcularLoteFijo: true
+    };
+
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${codArticulo}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyPut),
+    });
+
+    setEditandoId(null);
+    setFormData({});
+    await onDelete();
+  } catch {
+    alert('Error al actualizar los datos');
+  }
+};
 
   const eliminarArticuloProveedor = async (codArticulo: number) => {
     const confirmar = await Swal.fire({

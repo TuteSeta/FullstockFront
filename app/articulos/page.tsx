@@ -45,7 +45,12 @@ export default function ArticulosPage() {
   const fetchArticulos = async () => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos`);
     const data = await res.json();
-    setArticulos(data);
+    if (Array.isArray(data)) {
+      setArticulos(data);
+    } else {
+      setArticulos([]);
+      console.error('Error al obtener artículos:', data);
+    }
   };
 
   useEffect(() => {
