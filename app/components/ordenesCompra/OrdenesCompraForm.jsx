@@ -12,24 +12,26 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
 
   // Cargar artículos del proveedor seleccionado
   useEffect(() => {
-  if (codProveedor) {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos/proveedor/${codProveedor}`)
-      .then(res => res.json())
-      .then(data => setArticulosProveedor(data.map(r => ({
-        ...r.articulo,
-      precioUnitarioAP: r.precioUnitarioAP
-  }))));
-  } else {
-    setArticulosProveedor([]);
-  }
-  setCodArticulo("");
-  setPrecioActual(null);
+    if (codProveedor) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos/proveedor/${codProveedor}`)
+        .then(res => res.json())
+        .then(data => setArticulosProveedor(data.map(r => ({
+          codArticulo: r.articulo.codArticulo,
+          nombreArt: r.articulo.nombreArt,
+          precioUnitarioAP: r.precioUnitarioAP ?? r.costoUnitarioAP ?? 0
+        }))));
+    } else {
+      setArticulosProveedor([]);
+    }
+    setCodArticulo("");
+    setPrecioActual(null);
   }, [codProveedor]);
 
   // Actualizar precio cuando cambia el artículo
   useEffect(() => {
     if (codArticulo) {
       const art = articulosProveedor.find(a => a.codArticulo === parseInt(codArticulo));
+      console.log("Precio encontrado:", art?.precioUnitarioAP, "Tipo:", typeof art?.precioUnitarioAP);
       setPrecioActual(art ? art.precioUnitarioAP : null);
     } else {
       setPrecioActual(null);
@@ -41,6 +43,10 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
     if (!codArticulo || !cantidadDOC) return;
     const articulo = articulos.find(a => a.codArticulo === parseInt(codArticulo));
     const articuloProveedor = articulosProveedor.find(a => a.codArticulo === parseInt(codArticulo));
+    if (!articulo || !articuloProveedor || typeof articuloProveedor.precioUnitarioAP !== "number") {
+      alert("Error: no se pudo obtener el precio del artículo.");
+      return;
+    }
     if (!articulo) return;
     setDetalleOC(prev => [
       ...prev,
@@ -127,10 +133,10 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
             .map(a => (
               <option key={a.codArticulo} value={a.codArticulo}>
                 {a.nombreArt}
-            </option>
-          ))}
+              </option>
+            ))}
         </select>
-        
+
         <input
           type="number"
           min="1"
@@ -139,7 +145,7 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
           onChange={e => setCantidadDOC(e.target.value)}
           className="border border-gray-300 rounded px-3 py-2 w-24 text-gray-800 bg-white"
         />
-        
+
         {/* Mostrar el precio unitario y el monto calculado */}
         {precioActual !== null && cantidadDOC ? (
           <div className="flex items-center text-gray-700">

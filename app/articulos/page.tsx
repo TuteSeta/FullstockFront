@@ -258,6 +258,7 @@ export default function ArticulosPage() {
           <div className="text-center">Código</div>
           <div className="text-center">Cantidad</div>
           <div className="text-center">Modelo</div>
+          <div className="text-center">Precio</div>
           <div className="text-center">Stock Seguridad</div>
         </div>
 

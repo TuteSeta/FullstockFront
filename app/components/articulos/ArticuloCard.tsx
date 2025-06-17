@@ -9,7 +9,7 @@ type Articulo = {
   cantArticulo: number;
   precioArticulo: number;
   modeloInventarioIntervaloFijo?: { stockSeguridadIF: number };
-  modeloInventarioLoteFijo?: { stockSeguridadLF: number,loteOptimo: number, puntoPedido:number, };
+  modeloInventarioLoteFijo?: { stockSeguridadLF: number, loteOptimo: number, puntoPedido: number, };
   proveedorPredeterminado?: {
     nombreProveedor: string;
   };
@@ -47,16 +47,16 @@ export default function ArticuloCard({
           {articulo.codArticulo}
         </div>
         <div className="text-sm text-gray-700 sm:text-center">
-          <span className="block sm:hidden font-semibold">Precio: </span>
-          {articulo.precioArticulo}
-        </div>
-        <div className="text-sm text-gray-700 sm:text-center">
           <span className="block sm:hidden font-semibold">Cantidad: </span>
           {articulo.cantArticulo}
         </div>
         <div className="text-sm text-gray-700 sm:text-center">
           <span className="block sm:hidden font-semibold">Modelo: </span>
           {modelo}
+        </div>
+        <div className="text-sm text-gray-700 sm:text-center">
+          <span className="block sm:hidden font-semibold">Precio: </span>
+          {articulo.precioArticulo}
         </div>
         <div className="text-sm text-gray-700 sm:text-center">
           <span className="block sm:hidden font-semibold">Stock Seguridad: </span>

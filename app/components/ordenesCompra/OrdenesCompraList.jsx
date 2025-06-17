@@ -10,6 +10,25 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
   const [newCantidad, setNewCantidad] = useState("");
   const [mostrarCanceladas, setMostrarCanceladas] = useState(false);
 
+  // Finalizar una orden
+  const handleFinalizarOrden = async (nroOrdenCompra) => {
+    const confirmar = window.confirm("¿Marcar esta orden como finalizada y actualizar stock?");
+    if (!confirmar) return;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes/${nroOrdenCompra}/finalizar`, {
+      method: "PATCH",
+    });
+
+    if (res.ok) {
+      onSuccess?.();
+      setOrdenSeleccionada(null);
+    } else {
+      const error = await res.json();
+      alert(error.error || "Error al finalizar la orden.");
+    }
+  };
+
+
   // Efecto para mantener sincronizada la orden seleccionada
   useEffect(() => {
     if (ordenSeleccionada) {
@@ -149,6 +168,12 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
                 <p className="mb-2 text-black">
                   Fecha: {new Date(ordenSeleccionada.fechaCreacion).toLocaleDateString()}
                 </p>
+                <p className="mb-2 text-black">
+                  Estado actual:{" "}
+                  <span className="font-semibold">
+                    {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC || "Desconocido"}
+                  </span>
+                </p>
                 <p className="mb-4 text-black">
                   Monto total: <span className="font-semibold">${ordenSeleccionada.montoOrdenCompra}</span>
                 </p>
@@ -181,38 +206,54 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
                         </div>
                       </div>
 
-                      {editandoIndex === index ? (
+                      {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Pendiente" && (
                         <>
-                          <button onClick={() => saveEditing(detalle)} className="text-green-600 hover:text-green-800 ml-2">
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => setEditandoIndex(null)} className="text-gray-600 hover:text-gray-800 ml-2">
-                            <X className="w-4 h-4" />
+                          {editandoIndex === index ? (
+                            <>
+                              <button onClick={() => saveEditing(detalle)} className="text-green-600 hover:text-green-800 ml-2">
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => setEditandoIndex(null)} className="text-gray-600 hover:text-gray-800 ml-2">
+                                <X className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <button onClick={() => startEditing(index, detalle.cantidadDOC)} className="text-blue-600 hover:text-blue-800 ml-2">
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => handleEliminarArticulo(ordenSeleccionada.nroOrdenCompra, detalle.nroRenglonDOC)}
+                            className="text-red-600 hover:text-red-800 ml-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </>
-                      ) : (
-                        <button onClick={() => startEditing(index, detalle.cantidadDOC)} className="text-blue-600 hover:text-blue-800 ml-2">
-                          <Pencil className="w-4 h-4" />
-                        </button>
                       )}
-
-                      <button
-                        onClick={() => handleEliminarArticulo(ordenSeleccionada.nroOrdenCompra, detalle.nroRenglonDOC)}
-                        className="text-red-600 hover:text-red-800 ml-2"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
                     </li>
                   ))}
                 </ul>
 
-                <button
-                  onClick={() => handleEliminarOrden(ordenSeleccionada.nroOrdenCompra)}
-                  className="mt-6 flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Eliminar orden
-                </button>
+                {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Pendiente" && (
+                  <button
+                    onClick={() => handleEliminarOrden(ordenSeleccionada.nroOrdenCompra)}
+                    className="mt-6 flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Eliminar orden
+                  </button>
+                )}
+
+                {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC !== "Finalizada" && (
+                  <button
+                    onClick={() => handleFinalizarOrden(ordenSeleccionada.nroOrdenCompra)}
+                    className="mt-2 flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                  >
+                    <Check className="w-4 h-4" />
+                    Finalizar orden
+                  </button>
+                )}
               </motion.div>
             </motion.div>
           </>
