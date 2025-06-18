@@ -28,8 +28,9 @@ type Articulo = {
     stockSeguridadLF: number;
   };
   modeloInventarioIntervaloFijo?: {
-    intervaloTiempo: number;
     stockSeguridadIF: number;
+    inventarioMaximo: number;
+    intervaloTiempo: number;
   };
 };
 

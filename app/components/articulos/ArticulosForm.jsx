@@ -21,7 +21,8 @@ export default function ArticuloForm({ articulo, onSuccess }) {
     },
     modeloInventarioIntervaloFijo: {
       intervaloTiempo: '',
-      stockSeguridadIF: ''
+      stockSeguridadIF: '',
+      inventarioMaximo: '' 
     }
   });
 
@@ -62,7 +63,8 @@ export default function ArticuloForm({ articulo, onSuccess }) {
       },
       modeloInventarioIntervaloFijo: {
         intervaloTiempo: '',
-        stockSeguridadIF: ''
+        stockSeguridadIF: '',
+        inventarioMaximo: ''
       },
     }));
   };
@@ -257,23 +259,40 @@ export default function ArticuloForm({ articulo, onSuccess }) {
             <input
               type="number"
               name="intervaloTiempo"
-              placeholder="Intervalo de Tiempo: "
+              placeholder="Intervalo de Tiempo (días)"
               value={formData.modeloInventarioIntervaloFijo?.intervaloTiempo || ''}
               onChange={handleModeloFieldChange}
               required
               className="border border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-black col-span-full"
             />
-            <input
-              type="number"
-              name="stockSeguridadIF"
-              placeholder="Stock de Seguridad (Intervalo fijo): "
-              value={formData.modeloInventarioIntervaloFijo?.stockSeguridadIF || ''}
-              onChange={handleModeloFieldChange}
-              required
-              className="border border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-black col-span-full"
-            />
+
+            <p className="text-sm italic text-gray-500 col-span-full">
+              El <strong>stock de seguridad</strong> y el <strong>inventario máximo</strong> serán calculados automáticamente por el sistema al guardar.
+            </p>
+
+            {articulo && (
+              <>
+                <input
+                  type="number"
+                  name="stockSeguridadIF"
+                  placeholder="Stock Seguridad (calculado)"
+                  value={formData.modeloInventarioIntervaloFijo?.stockSeguridadIF || ''}
+                  disabled
+                  className="border border-gray-300 rounded px-3 py-2 bg-gray-100 text-black col-span-full"
+                />
+                <input
+                  type="number"
+                  name="inventarioMaximo"
+                  placeholder="Inventario Máximo (calculado)"
+                  value={formData.modeloInventarioIntervaloFijo?.inventarioMaximo || ''}
+                  disabled
+                  className="border border-gray-300 rounded px-3 py-2 bg-gray-100 text-black col-span-full"
+                />
+              </>
+            )}
           </>
         )}
+
 
         {/* Botón de envío */}
         <button

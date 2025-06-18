@@ -8,7 +8,11 @@ type Articulo = {
   descripcion: string;
   cantArticulo: number;
   precioArticulo: number;
-  modeloInventarioIntervaloFijo?: { stockSeguridadIF: number };
+  modeloInventarioIntervaloFijo?: {
+    stockSeguridadIF: number;
+    inventarioMaximo: number;
+    intervaloTiempo: number;
+  };
   modeloInventarioLoteFijo?: { stockSeguridadLF: number, loteOptimo: number, puntoPedido: number, };
   proveedorPredeterminado?: {
     nombreProveedor: string;
@@ -119,6 +123,19 @@ export default function ArticuloCard({
                     </p>
                     <p>
                       <strong>Stock de Seguridad:</strong> {articulo.modeloInventarioLoteFijo.stockSeguridadLF}
+                    </p>
+                  </>
+                )}
+                {articulo.modeloInventarioIntervaloFijo && (
+                  <>
+                    <p>
+                      <strong>Intervalo de Tiempo:</strong> {articulo.modeloInventarioIntervaloFijo.intervaloTiempo} días
+                    </p>
+                    <p>
+                      <strong>Inventario Máximo:</strong> {articulo.modeloInventarioIntervaloFijo.inventarioMaximo}
+                    </p>
+                    <p>
+                      <strong>Stock de Seguridad:</strong> {articulo.modeloInventarioIntervaloFijo.stockSeguridadIF}
                     </p>
                   </>
                 )}
