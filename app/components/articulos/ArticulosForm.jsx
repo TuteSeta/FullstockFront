@@ -22,7 +22,8 @@ export default function ArticuloForm({ articulo, onSuccess }) {
     modeloInventarioIntervaloFijo: {
       intervaloTiempo: '',
       stockSeguridadIF: '',
-      inventarioMaximo: '' 
+      inventarioMaximo: '',
+      cantidadPedido: '' 
     }
   });
 
@@ -64,7 +65,8 @@ export default function ArticuloForm({ articulo, onSuccess }) {
       modeloInventarioIntervaloFijo: {
         intervaloTiempo: '',
         stockSeguridadIF: '',
-        inventarioMaximo: ''
+        inventarioMaximo: '',
+        cantidadPedido: ''
       },
     }));
   };
@@ -285,6 +287,14 @@ export default function ArticuloForm({ articulo, onSuccess }) {
                   name="inventarioMaximo"
                   placeholder="Inventario Máximo (calculado)"
                   value={formData.modeloInventarioIntervaloFijo?.inventarioMaximo || ''}
+                  disabled
+                  className="border border-gray-300 rounded px-3 py-2 bg-gray-100 text-black col-span-full"
+                />
+                <input
+                  type="number"
+                  name="cantidadPedido"
+                  placeholder="Cantidad Pedido (calculado)"
+                  value={formData.modeloInventarioIntervaloFijo?.cantidadPedido || ''}
                   disabled
                   className="border border-gray-300 rounded px-3 py-2 bg-gray-100 text-black col-span-full"
                 />
