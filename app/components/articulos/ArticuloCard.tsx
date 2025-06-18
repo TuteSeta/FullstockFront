@@ -12,6 +12,7 @@ type Articulo = {
     stockSeguridadIF: number;
     inventarioMaximo: number;
     intervaloTiempo: number;
+    cantidadPedido: number;
   };
   modeloInventarioLoteFijo?: { stockSeguridadLF: number, loteOptimo: number, puntoPedido: number, };
   proveedorPredeterminado?: {
@@ -136,6 +137,9 @@ export default function ArticuloCard({
                     </p>
                     <p>
                       <strong>Stock de Seguridad:</strong> {articulo.modeloInventarioIntervaloFijo.stockSeguridadIF}
+                    </p>
+                    <p>
+                      <strong>Cantidad a pedir:</strong> {articulo.modeloInventarioIntervaloFijo.cantidadPedido}
                     </p>
                   </>
                 )}

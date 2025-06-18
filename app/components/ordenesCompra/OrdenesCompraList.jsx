@@ -10,6 +10,25 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
   const [newCantidad, setNewCantidad] = useState("");
   const [mostrarCanceladas, setMostrarCanceladas] = useState(false);
 
+  // Enviar una orden
+
+  const handleEnviarOrden = async (nroOrdenCompra) => {
+    const confirmar = window.confirm("¿Enviar esta orden? No podrá ser modificada ni cancelada.");
+    if (!confirmar) return;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes/${nroOrdenCompra}/enviar`, {
+      method: "PATCH",
+    });
+
+    if (res.ok) {
+      onSuccess?.();
+      setOrdenSeleccionada(null);
+    } else {
+      const error = await res.json();
+      alert(error.error || "Error al enviar la orden.");
+    }
+  };
+
   // Finalizar una orden
   const handleFinalizarOrden = async (nroOrdenCompra) => {
     const confirmar = window.confirm("¿Marcar esta orden como finalizada y actualizar stock?");
@@ -245,7 +264,17 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
                   </button>
                 )}
 
-                {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC !== "Finalizada" && (
+                {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Pendiente" && (
+                  <button
+                     onClick={() => handleEnviarOrden(ordenSeleccionada.nroOrdenCompra)}
+                     className="mt-2 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                   >
+                     <Check className="w-4 h-4" />
+                     Enviar orden
+                   </button>
+                 )}
+
+                {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Enviada" && (
                   <button
                     onClick={() => handleFinalizarOrden(ordenSeleccionada.nroOrdenCompra)}
                     className="mt-2 flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
