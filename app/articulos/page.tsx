@@ -29,6 +29,7 @@ type Articulo = {
   };
   modeloInventarioIntervaloFijo?: {
     stockSeguridadIF: number;
+    cantidadPedido: number;
     inventarioMaximo: number;
     intervaloTiempo: number;
   };
@@ -118,29 +119,63 @@ export default function ArticulosPage() {
       let registrosExitosos = 0;
       let registrosFallidos: string[] = [];
 
+      const resProveedores = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedores`);
+      const proveedores = await resProveedores.json();
+
       const articulosParseados = (json as any[]).map((row, idx) => {
+        console.log(`Fila ${idx + 2}:`, row); // 👈 esto
+        const codProveedor = (proveedores as { codProveedor: number; nombreProveedor: string }[]).find(
+          (p) => p.nombreProveedor?.toLowerCase().trim() === String(row['proveedor']).toLowerCase().trim()
+        )?.codProveedor ?? null;
+
+        const modeloInventarioRaw = Number(row['modeloInventario']);
+        const modeloSeleccionado =
+          modeloInventarioRaw === 1 ? 'loteFijo' :
+            modeloInventarioRaw === 2 ? 'intervaloFijo' : '';
+
+
+        const basePayload: any = {
+          nombreArt: row['nombreArt'] || '',
+          descripcion: row['descripcion'] || '',
+          demanda: Number(row['demanda'] ?? 0),
+          precioArticulo: Number(row['precioArticulo'] ?? 0),
+          cantArticulo: Number(row['cantArticulo'] ?? 0),
+          costoMantenimiento: Number(row['costoMantenimiento'] ?? 0),
+          desviacionDemandaLArticulo: Number(row['desviacionDemandaLArticulo'] ?? 0),
+          desviacionDemandaTArticulo: Number(row['desviacionDemandaTArticulo'] ?? 0),
+          nivelServicioDeseado: Number(row['nivelServicioDeseado'] ?? 0),
+          codProveedorPredeterminado: codProveedor,
+          recalcularLoteFijo: modeloSeleccionado === 'loteFijo',
+        };
+
+        if (modeloSeleccionado === 'loteFijo') {
+          basePayload.modeloInventarioLoteFijo = {
+            loteOptimo: 0,
+            puntoPedido: 0,
+            stockSeguridadLF: 0,
+          };
+          delete basePayload.modeloInventarioIntervaloFijo;
+        } else if (modeloSeleccionado === 'intervaloFijo') {
+          const intervalo = Number(row['intervaloTiempo']);
+          basePayload.modeloInventarioIntervaloFijo = isNaN(intervalo)
+            ? undefined
+            : {
+              intervaloTiempo: intervalo,
+              inventarioMaximo: 0,
+              stockSeguridadIF: 0,
+              cantidadPedido: 0,
+            };
+          delete basePayload.modeloInventarioLoteFijo;
+        }
+        else {
+          delete basePayload.modeloInventarioLoteFijo;
+          delete basePayload.modeloInventarioIntervaloFijo;
+          basePayload.codProveedorPredeterminado = null;
+        }
+
         return {
-          index: idx + 2, // para indicar la fila del Excel (asumiendo encabezados)
-          payload: {
-            nombreArt: row['nombreArt'] || '',
-            descripcion: row['descripcion'] || '',
-            demanda: Number(row['demanda'] || 0),
-            precioArticulo: Number(row['precioArticulo'] || 0),
-            cantArticulo: Number(row['cantArticulo'] || 0),
-            costoMantenimiento: Number(row['costoMantenimiento'] || 0),
-            desviacionDemandaLArticulo: Number(row['desviacionDemandaLArticulo'] || 0),
-            desviacionDemandaTArticulo: Number(row['desviacionDemandaTArticulo'] || 0),
-            nivelServicioDeseado: Number(row['nivelServicioDeseado'] || 0),
-            modeloInventarioLoteFijo: row['loteOptimo'] != null ? {
-              loteOptimo: Number(row['loteOptimo']),
-              puntoPedido: Number(row['puntoPedido']),
-              stockSeguridadLF: Number(row['stockSeguridadLF'])
-            } : undefined,
-            modeloInventarioIntervaloFijo: row['intervaloTiempo'] != null ? {
-              intervaloTiempo: Number(row['intervaloTiempo']),
-              stockSeguridadIF: Number(row['stockSeguridadIF'])
-            } : undefined
-          }
+          index: idx + 2,
+          payload: basePayload,
         };
       });
 
@@ -153,7 +188,6 @@ export default function ArticulosPage() {
           });
 
           if (!res.ok) throw new Error('Error al crear artículo');
-
           registrosExitosos++;
         } catch (err) {
           console.error(err);
@@ -161,7 +195,7 @@ export default function ArticulosPage() {
         }
       }
 
-      fetchArticulos();
+      await fetchArticulos();
 
       if (registrosExitosos > 0) {
         Swal.fire({
@@ -191,7 +225,6 @@ export default function ArticulosPage() {
       });
     }
   };
-
 
 
   const articulosFiltrados = articulos.filter((a) =>
