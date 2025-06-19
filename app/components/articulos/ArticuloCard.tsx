@@ -8,6 +8,7 @@ type Articulo = {
   descripcion: string;
   cantArticulo: number;
   precioArticulo: number;
+  ultimaRevision: Date;
   modeloInventarioIntervaloFijo?: {
     stockSeguridadIF: number;
     inventarioMaximo: number;
@@ -36,6 +37,10 @@ export default function ArticuloCard({
     articulo.modeloInventarioLoteFijo?.stockSeguridadLF ??
     articulo.modeloInventarioIntervaloFijo?.stockSeguridadIF ??
     'N/A';
+
+  const ultimaRevisionFormateada = articulo.ultimaRevision
+    ? new Date(articulo.ultimaRevision).toLocaleString()
+    : 'Sin revisión';
 
   return (
     <>
@@ -106,6 +111,9 @@ export default function ArticuloCard({
                 </p>
                 <p>
                   <strong>Precio articulo:</strong> {articulo.precioArticulo}
+                </p>
+                <p>
+                  <strong>Última Revisión:</strong> {ultimaRevisionFormateada}
                 </p>
                 <p>
                   <strong>Modelo de Inventario:</strong> {modelo}
