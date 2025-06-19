@@ -8,8 +8,9 @@ export async function parseProveedorArticuloExcel(file: File) {
   return XLSX.utils.sheet_to_json(sheet, { defval: '' }) as {
     nombreProveedor: string;
     nombreArt: string;
-    precioUnitarioAP: number;
+    costoUnitarioAP: number; // ✅ debe coincidir con la columna del Excel
     cargoPedidoAP: number;
     demoraEntregaAP: number;
   }[];
+
 }

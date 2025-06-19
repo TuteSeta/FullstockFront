@@ -52,7 +52,7 @@ export default function ProveedoresPage() {
         const {
           nombreProveedor,
           nombreArt,
-          precioUnitarioAP,
+          costoUnitarioAP, // ✅ Campo correcto
           cargoPedidoAP,
           demoraEntregaAP,
         } = row;
@@ -103,10 +103,11 @@ export default function ProveedoresPage() {
           body: JSON.stringify({
             codProveedor,
             codArticulo: articulo.codArticulo,
-            precioUnitarioAP: Number(precioUnitarioAP),
+            costoUnitarioAP: Number(costoUnitarioAP), // ✅ corregido
             cargoPedidoAP: Number(cargoPedidoAP),
             demoraEntregaAP: Number(demoraEntregaAP),
           }),
+
         });
 
         if (!relRes.ok) {
