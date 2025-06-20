@@ -8,7 +8,8 @@ type Articulo = {
   descripcion: string;
   cantArticulo: number;
   precioArticulo: number;
-  ultimaRevision: Date;
+  ultimaRevision?: string | null;
+  cgi: number;
   modeloInventarioIntervaloFijo?: {
     stockSeguridadIF: number;
     inventarioMaximo: number;
@@ -121,6 +122,10 @@ export default function ArticuloCard({
                 <p>
                   <strong>Proveedor Predeterminado:</strong>{' '}
                   {articulo.proveedorPredeterminado?.nombreProveedor ?? 'No asignado'}
+                </p>
+                <p>
+                  <strong>CGI:</strong>{' '}
+                  {articulo.cgi ? articulo.cgi : 'No asignado'}
                 </p>
                 {articulo.modeloInventarioLoteFijo && (
                   <>

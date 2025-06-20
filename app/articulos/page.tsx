@@ -17,6 +17,8 @@ type Articulo = {
   descripcion: string;
   cantArticulo: number;
   precioArticulo: number;
+  ultimaRevision?: string | null;
+  cgi: number;
   costoMantenimiento: number;
   demanda: number;
   desviacionDemandaLArticulo: number;
@@ -42,18 +44,22 @@ export default function ArticulosPage() {
   const [filtros, setFiltros] = useState<{ nombre?: string }>({});
   const [page, setPage] = useState(1);
   const pageSize = 5;
+  const [filtroActivo, setFiltroActivo] = useState('');
 
 
-  const fetchArticulos = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos`);
-    const data = await res.json();
-    if (Array.isArray(data)) {
-      setArticulos(data);
-    } else {
-      setArticulos([]);
-      console.error('Error al obtener artículos:', data);
-    }
-  };
+  const fetchArticulos = async (filtro = '') => {
+  let url = `${process.env.NEXT_PUBLIC_API_URL}/articulos`;
+  if (filtro) url += `?filtro=${filtro}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+  if (Array.isArray(data)) {
+    setArticulos(data);
+  } else {
+    setArticulos([]);
+    console.error('Error al obtener artículos:', data);
+  }
+};
 
   useEffect(() => {
     fetchArticulos();
@@ -98,7 +104,7 @@ export default function ArticulosPage() {
       Swal.fire({
         icon: 'error',
         title: 'Error al eliminar',
-        text: 'No se pudo eliminar el artículo. Puede estar relacionado con ventas u órdenes.',
+        text: 'No se pudo eliminar el artículo. Puede estar relacionado con ordenes pendientes/enviadas o stock disponible.',
         confirmButtonColor: '#d33',
       });
     }
@@ -283,6 +289,27 @@ export default function ArticulosPage() {
           >
             <Plus className="mr-2" />
             Agregar artículo
+          </button>
+        </div>
+
+        <div className="flex gap-2 mb-4">
+          <button
+            className={`px-4 py-2 rounded ${filtroActivo === '' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            onClick={() => { fetchArticulos(''); setFiltroActivo(''); setPage(1); }}
+          >
+            Todos
+          </button>
+          <button
+            className={`px-4 py-2 rounded ${filtroActivo === 'punto-pedido' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            onClick={() => { fetchArticulos('punto-pedido'); setFiltroActivo('punto-pedido'); setPage(1); }}
+          >
+            A Reponer
+          </button>
+          <button
+            className={`px-4 py-2 rounded ${filtroActivo === 'stock-seguridad' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            onClick={() => { fetchArticulos('stock-seguridad'); setFiltroActivo('stock-seguridad'); setPage(1); }}
+          >
+            Faltantes
           </button>
         </div>
 
