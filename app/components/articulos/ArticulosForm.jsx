@@ -298,6 +298,14 @@ export default function ArticuloForm({ articulo, onSuccess }) {
                   disabled
                   className="border border-gray-300 rounded px-3 py-2 bg-gray-100 text-black col-span-full"
                 />
+                <input
+                  type="number"
+                  name="cgi"
+                  placeholder="Costo Global de Inventario (CGI)"
+                  value={articulo.cgi ?? ''}
+                  disabled
+                  className="border border-gray-300 rounded px-3 py-2 bg-gray-100 text-black col-span-full"
+                />
               </>
             )}
           </>
