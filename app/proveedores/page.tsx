@@ -17,6 +17,8 @@ type Proveedor = {
 export default function ProveedoresPage() {
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const proveedoresPorPagina = 5;
 
   const fetchProveedores = async () => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedores?soloActivos=true`);
@@ -29,10 +31,16 @@ export default function ProveedoresPage() {
   }, []);
 
   useEffect(() => {
-  const handler = () => fetchProveedores();
-  window.addEventListener('recargarProveedores', handler);
-  return () => window.removeEventListener('recargarProveedores', handler);
+    const handler = () => fetchProveedores();
+    window.addEventListener('recargarProveedores', handler);
+    return () => window.removeEventListener('recargarProveedores', handler);
   }, []);
+
+  const totalPaginas = Math.ceil(proveedores.length / proveedoresPorPagina);
+  const proveedoresPaginados = proveedores.slice(
+    (paginaActual - 1) * proveedoresPorPagina,
+    paginaActual * proveedoresPorPagina
+  );
 
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,7 +60,7 @@ export default function ProveedoresPage() {
         const {
           nombreProveedor,
           nombreArt,
-          costoUnitarioAP, // ✅ Campo correcto
+          costoUnitarioAP,
           cargoPedidoAP,
           demoraEntregaAP,
         } = row;
@@ -103,11 +111,10 @@ export default function ProveedoresPage() {
           body: JSON.stringify({
             codProveedor,
             codArticulo: articulo.codArticulo,
-            costoUnitarioAP: Number(costoUnitarioAP), // ✅ corregido
+            costoUnitarioAP: Number(costoUnitarioAP),
             cargoPedidoAP: Number(cargoPedidoAP),
             demoraEntregaAP: Number(demoraEntregaAP),
           }),
-
         });
 
         if (!relRes.ok) {
@@ -131,7 +138,7 @@ export default function ProveedoresPage() {
         Swal.fire({
           icon: 'error',
           title: 'Error en la importación',
-          text: 'No se pudo importar ningún registro. Verifica el Excel y los datos.',  
+          text: 'No se pudo importar ningún registro. Verifica el Excel y los datos.',
           confirmButtonColor: '#d33',
         });
       }
@@ -178,20 +185,47 @@ export default function ProveedoresPage() {
           </div>
         </div>
 
-        {/* Encabezado tipo tabla */}
-        <div className="hidden sm:grid grid-cols-2 gap-4 mb-4 p-4 bg-gray-200 rounded-lg">
+          <div className="hidden sm:grid grid-cols-2 gap-4 mb-4 p-4 bg-gray-200 rounded-lg text-sm font-semibold">
           <div className="font-semibold">Nombre</div>
-          <div className="font-semibold text-center">Baja</div>
+          <div className="font-semibold text-center">Código</div>
         </div>
 
-        {/* Lista de proveedores */}
         <div className="flex flex-col gap-4">
-          {proveedores.map((proveedor) => (
+          {proveedoresPaginados.map((proveedor) => (
             <ProveedorCard key={proveedor.codProveedor} proveedor={proveedor} />
           ))}
         </div>
 
-        {/* Modal del formulario */}
+        {totalPaginas > 1 && (
+          <div className="flex justify-center mt-6 gap-2">
+            <button
+              onClick={() => setPaginaActual((prev) => Math.max(prev - 1, 1))}
+              disabled={paginaActual === 1}
+              className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 disabled:opacity-50"
+            >
+              ← Anterior
+            </button>
+            {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((num) => (
+              <button
+                key={num}
+                onClick={() => setPaginaActual(num)}
+                className={`px-3 py-1 rounded ${
+                  paginaActual === num ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'
+                }`}
+              >
+                {num}
+              </button>
+            ))}
+            <button
+              onClick={() => setPaginaActual((prev) => Math.min(prev + 1, totalPaginas))}
+              disabled={paginaActual === totalPaginas}
+              className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 disabled:opacity-50"
+            >
+              Siguiente →
+            </button>
+          </div>
+        )}
+
         <AnimatePresence>
           {mostrarFormulario && (
             <>
