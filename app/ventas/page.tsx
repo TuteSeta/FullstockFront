@@ -65,7 +65,7 @@ export default function VentasPage() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-6">
+    <div className="bg-gray-50 min-h-screen px-9 py-5">
       <BackButton label="Volver" />
       <div className="grid md:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
@@ -86,9 +86,7 @@ export default function VentasPage() {
                 className="border border-gray-300 rounded-md px-2 py-1 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
+          
               </select>
             </div>
           </div>

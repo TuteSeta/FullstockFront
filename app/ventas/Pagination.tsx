@@ -75,7 +75,7 @@ export default function Pagination({
           aria-label="Página anterior"
         >
           <ChevronLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Anterior</span>
+          <span className="hidden sm:inline cursor-pointer">Anterior</span>
         </button>
 
         <div className="flex items-center gap-1">
@@ -84,7 +84,7 @@ export default function Pagination({
               key={index}
               onClick={() => typeof page === 'number' && onPageChange(page)}
               disabled={page === '...'}
-              className={`px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-colors  cursor-pointer ${
                 page === currentPage
                   ? 'bg-blue-600 text-white shadow-sm'
                   : page === '...'
@@ -104,7 +104,7 @@ export default function Pagination({
           className="flex items-center gap-1 px-2 sm:px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           aria-label="Página siguiente"
         >
-          <span className="hidden sm:inline">Siguiente</span>
+          <span className="hidden sm:inline  cursor-pointer">Siguiente</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>

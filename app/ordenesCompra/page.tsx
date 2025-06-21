@@ -92,7 +92,7 @@ export default function OrdenesCompraPage() {
   };
 
   return (
-    <div className="space-y-8 bg-white min-h-screen p-6">
+    <div className="space-y-8 bg-white min-h-screen px-9 py-5">
       <BackButton label="Volver" />
 
       <div>

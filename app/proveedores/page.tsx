@@ -156,7 +156,7 @@ export default function ProveedoresPage() {
 
   return (
     <main className="min-h-screen bg-gray-100 text-gray-800 px-4 sm:px-8 py-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full px-5">
         <BackButton />
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
