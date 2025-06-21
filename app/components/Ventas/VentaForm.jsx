@@ -161,9 +161,9 @@ export default function VentaForm({ articulos, onSuccess }) {
         <button
           type="button"
           onClick={agregarArticulo}
-          className="col-span-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center justify-center gap-1"
+          className="col-span-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2  cursor-pointer rounded flex items-center justify-center gap-1"
         >
-          <Plus className="w-4 h-4" /> Añadir
+          <Plus className="w-4 h-4  cursor-pointer" /> Añadir
         </button>
       </div>
 
@@ -229,7 +229,7 @@ export default function VentaForm({ articulos, onSuccess }) {
 
       <button
         type="submit"
-        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold w-full"
+        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold w-full cursor-pointer "
       >
         Registrar Venta
       </button>
