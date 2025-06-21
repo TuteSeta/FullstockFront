@@ -100,7 +100,6 @@ export default function Home() {
       .catch(err => console.error("Error al obtener stock:", err));
   }, []);
 
-
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/count`)
       .then(res => res.json())
