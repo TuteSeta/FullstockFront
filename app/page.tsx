@@ -78,6 +78,7 @@ export default function Home() {
       .catch((err) => console.error("Error al obtener stock bajo:", err));
   }, []);
 
+  const maxStock = stockBajo.length > 0 ? Math.max(...stockBajo.map(item => item.cantidad)) : 1;
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/ventas/historico`)
@@ -203,25 +204,19 @@ export default function Home() {
           <h2 className="text-2xl text-white font-bold">Niveles de Stock</h2>
           <Card className="text-white p-6 rounded-lg shadow-md">
             {stockBajo.map((item, idx) => {
-              const porcentaje = Math.round((item.cantidad / item.total) * 100);
-              const estaEnRojo = item.cantidad <= item.stockSeguridad;
+              const porcentaje = maxStock > 0 ? (item.cantidad / maxStock) * 100 : 0;
 
               return (
                 <div key={idx} className="mb-6">
                   <div className="flex justify-between mb-1 text-sm">
                     <Text className="text-white">{item.nombre}</Text>
                     <Text className="text-gray-300">
-                      {item.cantidad} / {item.total} restantes
+                      {item.cantidad} restantes
                     </Text>
                   </div>
                   <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
                     <div
-                      className={`h-full transition-all duration-500 rounded-full ${estaEnRojo
-                        ? "bg-red-500"
-                        : porcentaje < 80
-                          ? "bg-yellow-400"
-                          : "bg-lime-400"
-                        }`}
+                      className="h-full transition-all duration-500 rounded-full bg-lime-400"
                       style={{ width: `${porcentaje}%` }}
                     />
                   </div>
