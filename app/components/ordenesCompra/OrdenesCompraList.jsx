@@ -8,9 +8,6 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
   const [editandoIndex, setEditandoIndex] = useState(null);
   const [newCantidad, setNewCantidad] = useState("");
-  const [mostrarCanceladas, setMostrarCanceladas] = useState(false);
-
-  // Enviar una orden
 
   const handleEnviarOrden = async (nroOrdenCompra) => {
     const confirmar = window.confirm("¿Enviar esta orden? No podrá ser modificada ni cancelada.");
@@ -29,7 +26,6 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
     }
   };
 
-  // Finalizar una orden
   const handleFinalizarOrden = async (nroOrdenCompra) => {
     const confirmar = window.confirm("¿Marcar esta orden como finalizada y actualizar stock?");
     if (!confirmar) return;
@@ -47,8 +43,6 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
     }
   };
 
-
-  // Efecto para mantener sincronizada la orden seleccionada
   useEffect(() => {
     if (ordenSeleccionada) {
       const ordenActualizada = ordenes.find(
@@ -57,19 +51,8 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
       if (ordenActualizada) setOrdenSeleccionada(ordenActualizada);
       else setOrdenSeleccionada(null);
     }
-    // eslint-disable-next-line
   }, [ordenes]);
 
-  // Cambia el filtro según el estado
-  const ordenesFiltradas = mostrarCanceladas
-    ? ordenes.filter(o => o.fechaHoraBajaOrdenCompra)
-    : ordenes.filter(o => !o.fechaHoraBajaOrdenCompra);
-
-  if (!ordenes.length) {
-    return <p className="text-black">No hay órdenes registradas.</p>;
-  }
-
-  // Eliminar orden completa
   const handleEliminarOrden = async (nroOrdenCompra) => {
     const confirmar = window.confirm("¿Estás seguro de que deseas eliminar esta orden?");
     if (!confirmar) return;
@@ -86,7 +69,6 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
     }
   };
 
-  // Editar cantidad de un artículo en la orden
   const handleEditarArticulo = async (nroRenglonDOC, nuevaCantidad) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes-detalle/${nroRenglonDOC}`, {
       method: "PUT",
@@ -95,16 +77,13 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
     });
 
     if (res.ok) {
-      // Actualiza el detalle en el estado local (opcional, puedes recargar todo)
       onSuccess?.();
       setEditandoIndex(null);
-
     } else {
       alert("Error al actualizar la cantidad.");
     }
   };
 
-  // Eliminar artículo de la orden
   const handleEliminarArticulo = async (nroOrdenCompra, nroRenglonDOC) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes-detalle/${nroRenglonDOC}`, {
       method: "DELETE",
@@ -126,23 +105,21 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
     handleEditarArticulo(detalle.nroRenglonDOC, Number(newCantidad));
   };
 
+  if (!ordenes.length) {
+    return <p className="text-black">No hay órdenes registradas.</p>;
+  }
 
   return (
     <>
-      <button
-        className="mb-4 px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-        onClick={() => setMostrarCanceladas(m => !m)}
-      >
-        {mostrarCanceladas ? "Ver órdenes activas" : "Ver órdenes canceladas"}
-      </button>
       <div className="hidden sm:grid grid-cols-4 gap-4 px-4 py-2 bg-gray-100 rounded text-sm font-semibold text-gray-700">
         <div>Código</div>
         <div>Fecha</div>
         <div>Monto</div>
         <div>Estado</div>
       </div>
+
       <div className="grid gap-4">
-        {ordenesFiltradas.map((orden) => (
+        {ordenes.map((orden) => (
           <div
             key={orden.nroOrdenCompra}
             className="grid grid-cols-4 gap-4 items-center px-4 py-2 bg-white border rounded shadow-sm cursor-pointer hover:scale-[1.01] transition-transform"
@@ -272,23 +249,23 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
                 </ul>
 
                 {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Pendiente" && (
-                  <button
-                    onClick={() => handleEliminarOrden(ordenSeleccionada.nroOrdenCompra)}
-                    className="mt-6 flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Eliminar orden
-                  </button>
-                )}
+                  <>
+                    <button
+                      onClick={() => handleEliminarOrden(ordenSeleccionada.nroOrdenCompra)}
+                      className="mt-6 flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Eliminar orden
+                    </button>
 
-                {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Pendiente" && (
-                  <button
-                    onClick={() => handleEnviarOrden(ordenSeleccionada.nroOrdenCompra)}
-                    className="mt-2 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                  >
-                    <Check className="w-4 h-4" />
-                    Enviar orden
-                  </button>
+                    <button
+                      onClick={() => handleEnviarOrden(ordenSeleccionada.nroOrdenCompra)}
+                      className="mt-2 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                    >
+                      <Check className="w-4 h-4" />
+                      Enviar orden
+                    </button>
+                  </>
                 )}
 
                 {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Enviada" && (
