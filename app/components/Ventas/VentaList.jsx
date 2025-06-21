@@ -100,34 +100,23 @@ export default function VentasList({ ventas, onSuccess }) {
             onClick={() => setVentaSeleccionada(venta)}
           >
             <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-gray-800 font-semibold">
-                  Venta #{venta.nroVenta}
-                </h3>
-                <p className="text-xs text-gray-500">
+              <div className="flex-grow pr-4">
+                <div className="flex items-baseline flex-wrap gap-x-2">
+                  <h3 className="text-gray-800 font-semibold">
+                    Venta #{venta.nroVenta}
+                  </h3>
+                  <p className="text-sm text-gray-600 truncate">
+                    - {venta.detalleVenta && venta.detalleVenta.length > 0
+                      ? `${venta.detalleVenta[0].articulo?.nombreArt ?? 'N/A'} (x${venta.detalleVenta[0].cantidad})`
+                      : 'Sin artículos'}
+                    {venta.detalleVenta?.length > 1 && ` y ${venta.detalleVenta.length - 1} más...`}
+                  </p>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
                   {venta.fechaVenta ? new Date(venta.fechaVenta).toLocaleDateString() : ''}
                 </p>
               </div>
-              <p className="text-base font-semibold text-gray-800">${venta.montoTotalVenta}</p>
-            </div>
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <h4 className="text-sm text-gray-700 font-medium">Artículos:</h4>
-              {venta.detalleVenta && venta.detalleVenta.length > 0 ? (
-                <ul className="text-sm text-gray-600 mt-1 list-disc list-inside space-y-1">
-                  {venta.detalleVenta.slice(0, 2).map((d) => (
-                    <li key={d.nroRenglonDV} className="truncate">
-                      {d.articulo?.nombreArt ?? 'Artículo sin nombre'} ({d.cantidad}x)
-                    </li>
-                  ))}
-                  {venta.detalleVenta.length > 2 && (
-                    <li className="text-xs text-gray-500 italic">
-                      ...y {venta.detalleVenta.length - 2} más
-                    </li>
-                  )}
-                </ul>
-              ) : (
-                <p className="text-sm text-gray-500 italic mt-1">Sin artículos</p>
-              )}
+              <p className="text-base font-semibold text-gray-800 flex-shrink-0">${venta.montoTotalVenta}</p>
             </div>
           </div>
         ))}
