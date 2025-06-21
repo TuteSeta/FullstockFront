@@ -98,30 +98,48 @@ export default function ArticuloForm({ articulo, onSuccess }) {
     let codProv = Number(formData.codProveedorPredeterminado);
     if (!codProv || isNaN(codProv)) codProv = null;
 
+    // Convertir todos los campos numéricos a number
     const dataToSend = {
-      ...formData,
-      codProveedorPredeterminado: codProv,
-      recalcularLoteFijo: modeloSeleccionado === 'loteFijo',
+    ...formData,
+    demanda: Number(formData.demanda),
+    cantArticulo: Number(formData.cantArticulo),
+    precioArticulo: Number(formData.precioArticulo),
+    costoMantenimiento: Number(formData.costoMantenimiento),
+    desviacionDemandaLArticulo: Number(formData.desviacionDemandaLArticulo),
+    desviacionDemandaTArticulo: Number(formData.desviacionDemandaTArticulo),
+    nivelServicioDeseado: Number(formData.nivelServicioDeseado),
+    codProveedorPredeterminado: codProv,
+    recalcularLoteFijo: modeloSeleccionado === 'loteFijo',
+  };
+
+  // Convertir campos del modelo de inventario si corresponde
+  if (modeloSeleccionado === 'loteFijo' && dataToSend.modeloInventarioLoteFijo) {
+    dataToSend.modeloInventarioLoteFijo = {
+      loteOptimo: Number(formData.modeloInventarioLoteFijo.loteOptimo) || 0,
+      puntoPedido: Number(formData.modeloInventarioLoteFijo.puntoPedido) || 0,
+      stockSeguridadLF: Number(formData.modeloInventarioLoteFijo.stockSeguridadLF) || 0,
     };
+    dataToSend.modeloSeleccionado = modeloSeleccionado;
+    delete dataToSend.modeloInventarioIntervaloFijo;
+  } else if (modeloSeleccionado === 'intervaloFijo' && dataToSend.modeloInventarioIntervaloFijo) {
+    dataToSend.modeloInventarioIntervaloFijo = {
+      intervaloTiempo: Number(formData.modeloInventarioIntervaloFijo.intervaloTiempo) || 0,
+      stockSeguridadIF: Number(formData.modeloInventarioIntervaloFijo.stockSeguridadIF) || 0,
+      inventarioMaximo: Number(formData.modeloInventarioIntervaloFijo.inventarioMaximo) || 0,
+      cantidadPedido: Number(formData.modeloInventarioIntervaloFijo.cantidadPedido) || 0,
+    };
+    delete dataToSend.modeloInventarioLoteFijo;
+  } else {
+    delete dataToSend.modeloInventarioLoteFijo;
+    delete dataToSend.modeloInventarioIntervaloFijo;
+    dataToSend.codProveedorPredeterminado = null;
+  }
 
-    // Forzar estructura clara según modelo
-    if (modeloSeleccionado === 'loteFijo') {
-      dataToSend.modeloSeleccionado = modeloSeleccionado;
-      delete dataToSend.modeloInventarioIntervaloFijo;
-    } else if (modeloSeleccionado === 'intervaloFijo') {
-      delete dataToSend.modeloInventarioLoteFijo;
-      // datos de intervalo ya están en formData.modeloInventarioIntervaloFijo
-    } else {
-      delete dataToSend.modeloInventarioLoteFijo;
-      delete dataToSend.modeloInventarioIntervaloFijo;
-      dataToSend.codProveedorPredeterminado = null;
-    }
+  const url = articulo
+    ? `${process.env.NEXT_PUBLIC_API_URL}/articulos/${articulo.codArticulo}`
+    : `${process.env.NEXT_PUBLIC_API_URL}/articulos`;
 
-    const url = articulo
-      ? `${process.env.NEXT_PUBLIC_API_URL}/articulos/${articulo.codArticulo}`
-      : `${process.env.NEXT_PUBLIC_API_URL}/articulos`;
-
-    const method = articulo ? 'PUT' : 'POST';
+  const method = articulo ? 'PUT' : 'POST';
 
     try {
       const res = await fetch(url, {
