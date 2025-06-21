@@ -381,7 +381,7 @@ export default function ArticulosPage() {
                 className="fixed inset-0 z-50 flex items-center justify-center px-4"
               >
                 <div
-                  className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full text-gray-800 relative"
+                  className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto text-gray-800 relative"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
