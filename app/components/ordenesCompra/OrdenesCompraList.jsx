@@ -135,17 +135,34 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
       >
         {mostrarCanceladas ? "Ver órdenes activas" : "Ver órdenes canceladas"}
       </button>
-
+      <div className="hidden sm:grid grid-cols-4 gap-4 px-4 py-2 bg-gray-100 rounded text-sm font-semibold text-gray-700">
+        <div>Código</div>
+        <div>Fecha</div>
+        <div>Monto</div>
+        <div>Estado</div>
+      </div>
       <div className="grid gap-4">
         {ordenesFiltradas.map((orden) => (
           <div
             key={orden.nroOrdenCompra}
-            className="border border-gray-200 rounded p-4 shadow-sm bg-white cursor-pointer hover:scale-[1.01] transition-transform"
+            className="grid grid-cols-4 gap-4 items-center px-4 py-2 bg-white border rounded shadow-sm cursor-pointer hover:scale-[1.01] transition-transform"
             onClick={() => setOrdenSeleccionada(orden)}
           >
-            <h3 className="font-semibold text-black">
-              Orden #{orden.nroOrdenCompra} - Fecha: {new Date(orden.fechaCreacion).toLocaleDateString()} - Monto: (${orden.montoOrdenCompra})
-            </h3>
+            <div className="font-medium text-gray-800">#{orden.nroOrdenCompra}</div>
+            <div className="text-sm text-gray-700">{new Date(orden.fechaCreacion).toLocaleDateString()}</div>
+            <div className="text-sm text-gray-700">${orden.montoOrdenCompra}</div>
+            <div>
+              <span className={`text-xs font-semibold px-2 py-1 rounded-full ${orden.estadoOrdenCompra?.nombreEstadoOC === 'Pendiente'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : orden.estadoOrdenCompra?.nombreEstadoOC === 'Enviada'
+                    ? 'bg-blue-100 text-blue-800'
+                    : orden.estadoOrdenCompra?.nombreEstadoOC === 'Finalizada'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-200 text-gray-700'
+                }`}>
+                {orden.estadoOrdenCompra?.nombreEstadoOC ?? 'Desconocido'}
+              </span>
+            </div>
           </div>
         ))}
       </div>
@@ -266,13 +283,13 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
 
                 {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Pendiente" && (
                   <button
-                     onClick={() => handleEnviarOrden(ordenSeleccionada.nroOrdenCompra)}
-                     className="mt-2 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                   >
-                     <Check className="w-4 h-4" />
-                     Enviar orden
-                   </button>
-                 )}
+                    onClick={() => handleEnviarOrden(ordenSeleccionada.nroOrdenCompra)}
+                    className="mt-2 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                  >
+                    <Check className="w-4 h-4" />
+                    Enviar orden
+                  </button>
+                )}
 
                 {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Enviada" && (
                   <button
