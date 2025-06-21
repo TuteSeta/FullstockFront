@@ -39,7 +39,7 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
     setArticulos(data);
   };
 
-  const articulosAsignados = articulos.map(a => a.codArticulo);
+  const articulosAsignados = articulos.map((a) => a.codArticulo);
 
   useEffect(() => {
     if (expandido) fetchArticulosProveedor();
@@ -52,19 +52,21 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
         onClick={() => setExpandido(true)}
         className="cursor-pointer bg-white shadow rounded-lg p-4 transition-all duration-300 hover:scale-[1.01]"
       >
+        {/* Vista mobile */}
         <div className="text-gray-900 text-base font-semibold sm:hidden">
-          <span className="font-medium">Nombre:</span> {proveedor.nombreProveedor}
+          <div>
+            <span className="block sm:hidden font-semibold">Nombre:</span> {proveedor.nombreProveedor}
+          </div>
+          <div>
+            <span className="block sm:hidden font-semibold">Código:</span> {proveedor.codProveedor}
+          </div>
         </div>
-        <h2 className="hidden sm:block text-xl font-semibold text-gray-900">
-          {proveedor.nombreProveedor}
-        </h2>
 
-        {proveedor.fechaHoraBajaProveedor && (
-          <p className="text-sm text-red-500 mt-1 sm:hidden">
-            <span className="font-medium">Baja:</span>{' '}
-            {new Date(proveedor.fechaHoraBajaProveedor).toLocaleDateString()}
-          </p>
-        )}
+        {/* Vista escritorio */}
+        <div className="hidden sm:grid grid-cols-2 text-sm font-semibold text-gray-900">
+          <span  >{proveedor.nombreProveedor}</span>
+          <span className="text-center">{proveedor.codProveedor}</span>
+        </div>
       </div>
 
       {/* Modal expandido */}
@@ -91,7 +93,6 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
                 onClick={(e) => e.stopPropagation()}
                 className="bg-white p-6 rounded-lg shadow-lg w-full max-w-[95vw] sm:max-w-[700px] lg:max-w-[900px] xl:max-w-[1100px] max-h-[90vh] overflow-y-auto text-gray-800 relative"
               >
-
                 {/* Botón cerrar */}
                 <button
                   onClick={() => setExpandido(false)}
@@ -100,17 +101,23 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
                 >
                   ×
                 </button>
+
                 {modoEdicion ? (
                   <input
                     type="text"
                     value={formData.nombreProveedor}
-                    onChange={(e) => setFormData({ ...formData, nombreProveedor: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nombreProveedor: e.target.value })
+                    }
                     className="text-2xl font-bold border px-2 py-1 rounded w-full mb-2"
                   />
                 ) : (
                   <h2 className="text-2xl font-bold">{proveedor.nombreProveedor}</h2>
                 )}
-                <p className="text-sm text-gray-500 mb-4">Código: {proveedor.codProveedor}</p>
+
+                <p className="text-sm text-gray-500 mb-4">
+                  Código de proveedor: {proveedor.codProveedor}
+                </p>
 
                 {/* Título y botones */}
                 <div className="flex gap-3 mb-4">
@@ -136,17 +143,20 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
                         cancelButtonColor: '#aaa',
                       });
                       if (!confirm.isConfirmed) return;
-                    
+
                       try {
-                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedores/${proveedor.codProveedor}`, {
-                          method: 'DELETE',
-                        });
+                        const res = await fetch(
+                          `${process.env.NEXT_PUBLIC_API_URL}/proveedores/${proveedor.codProveedor}`,
+                          {
+                            method: 'DELETE',
+                          }
+                        );
                         const data = await res.json();
-                      
+
                         if (!res.ok) {
                           throw new Error(data.error || 'No se pudo eliminar');
                         }
-                      
+
                         await Swal.fire({
                           icon: 'success',
                           title: 'Proveedor eliminado',
@@ -154,7 +164,6 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
                           confirmButtonColor: '#3085d6',
                         });
                         setExpandido(false);
-                        // 🔁 Avisá al padre que recargue la lista (ver punto 2)
                         if (typeof window !== 'undefined' && window.dispatchEvent) {
                           window.dispatchEvent(new Event('recargarProveedores'));
                         }
@@ -169,18 +178,11 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
                     }}
                     className="flex items-center gap-1 text-red-600 hover:text-red-800 transition"
                     title="Eliminar"
-                    >
+                  >
                     <Trash2 className="w-5 h-5" />
                     <span className="text-sm">Eliminar</span>
                   </button>
                 </div>
-
-                {/* Fecha de baja */}
-                {proveedor.fechaHoraBajaProveedor && (
-                  <p className="text-sm text-red-500 mb-4">
-                    Baja: {new Date(proveedor.fechaHoraBajaProveedor).toLocaleDateString()}
-                  </p>
-                )}
 
                 {/* Artículos */}
                 <ArticulosProveedorList
@@ -207,17 +209,20 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
                     }}
                   />
                 )}
+
                 {/* Botón guardar cambios */}
                 {modoEdicion && (
                   <button
                     onClick={async () => {
-                      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedores/${proveedor.codProveedor}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData),
-                      });
+                      await fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/proveedores/${proveedor.codProveedor}`,
+                        {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(formData),
+                        }
+                      );
                       setModoEdicion(false);
-
                     }}
                     className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
                   >
