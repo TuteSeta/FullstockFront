@@ -24,7 +24,7 @@ export default function VentasPage() {
   const [articulos, setArticulos] = useState([]);
   const [ventas, setVentas] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+const itemsPerPage = 5;
 
   useEffect(() => {
     async function fetchData() {
@@ -60,7 +60,7 @@ export default function VentasPage() {
   };
 
   const handleItemsPerPageChange = (newItemsPerPage: number) => {
-    setItemsPerPage(newItemsPerPage);
+
     setCurrentPage(1); // Resetear a la primera página
   };
 
@@ -75,20 +75,7 @@ export default function VentasPage() {
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-800">Ventas Registradas</h2>
-            <div className="flex items-center gap-2">
-              <label htmlFor="itemsPerPage" className="text-sm text-gray-800">
-                Mostrar:
-              </label>
-              <select
-                id="itemsPerPage"
-                value={itemsPerPage}
-                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                className="border border-gray-300 rounded-md px-2 py-1 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value={5}>5</option>
-          
-              </select>
-            </div>
+           
           </div>
           <VentasList ventas={currentVentas} onSuccess={handleVentaSuccess} />
           <Pagination
