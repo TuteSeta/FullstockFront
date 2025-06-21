@@ -223,6 +223,7 @@ export default function ArticuloForm({ articulo, onSuccess }) {
             onChange={handleChange}
             required
             className="border border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-black"
+            {...(type === 'number' ? { min: 0} : {})}
           />
 
         ))}

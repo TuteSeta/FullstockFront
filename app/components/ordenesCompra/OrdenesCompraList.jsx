@@ -8,6 +8,7 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
   const [editandoIndex, setEditandoIndex] = useState(null);
   const [newCantidad, setNewCantidad] = useState("");
+  const [cantidadError, setCantidadError] = useState("");
 
   const handleEnviarOrden = async (nroOrdenCompra) => {
     const confirmar = window.confirm("¿Enviar esta orden? No podrá ser modificada ni cancelada.");
@@ -99,9 +100,15 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
   const startEditing = (index, cantidad) => {
     setEditandoIndex(index);
     setNewCantidad(cantidad);
+    setCantidadError("");
   };
 
   const saveEditing = (detalle) => {
+    if (!newCantidad || Number(newCantidad) < 1) {
+      setCantidadError("La cantidad debe ser mayor o igual a 1");
+      return;
+    }
+    setCantidadError("");
     handleEditarArticulo(detalle.nroRenglonDOC, Number(newCantidad));
   };
 
@@ -205,12 +212,21 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
                           <div>
                             <strong>Cantidad:</strong>{" "}
                             {editandoIndex === index ? (
-                              <input
-                                type="number"
-                                value={newCantidad}
-                                onChange={(e) => setNewCantidad(e.target.value)}
-                                className="border rounded px-1 ml-2 py-1"
-                              />
+                              <>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={newCantidad}
+                                  onChange={(e) => {
+                                    setNewCantidad(e.target.value);
+                                    setCantidadError("");
+                                  }}
+                                  className="border rounded px-1 ml-2 py-1"
+                                />
+                                {cantidadError && (
+                                  <div className="text-red-600 text-xs mt-1">{cantidadError}</div>
+                                )}
+                              </>
                             ) : (
                               detalle.cantidadDOC
                             )}
