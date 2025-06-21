@@ -96,13 +96,39 @@ export default function VentasList({ ventas, onSuccess }) {
         {ventas.map((venta) => (
           <div
             key={venta.nroVenta}
-            className="border-l-4 border-blue-500 bg-white rounded shadow p-4 hover:shadow-md cursor-pointer transition"
+            className="border-l-4 border-blue-500 bg-white rounded-lg shadow p-4 hover:shadow-lg cursor-pointer transition-shadow duration-300"
             onClick={() => setVentaSeleccionada(venta)}
           >
-            <h3 className="text-gray-800 font-semibold">
-              Venta #{venta.nroVenta} - {venta.fechaVenta ? new Date(venta.fechaVenta).toLocaleDateString() : ''}
-            </h3>
-            <p className="text-sm text-gray-600">Monto: ${venta.montoTotalVenta}</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-gray-800 font-semibold">
+                  Venta #{venta.nroVenta}
+                </h3>
+                <p className="text-xs text-gray-500">
+                  {venta.fechaVenta ? new Date(venta.fechaVenta).toLocaleDateString() : ''}
+                </p>
+              </div>
+              <p className="text-base font-semibold text-gray-800">${venta.montoTotalVenta}</p>
+            </div>
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <h4 className="text-sm text-gray-700 font-medium">Artículos:</h4>
+              {venta.detalleVenta && venta.detalleVenta.length > 0 ? (
+                <ul className="text-sm text-gray-600 mt-1 list-disc list-inside space-y-1">
+                  {venta.detalleVenta.slice(0, 2).map((d) => (
+                    <li key={d.nroRenglonDV} className="truncate">
+                      {d.articulo?.nombreArt ?? 'Artículo sin nombre'} ({d.cantidad}x)
+                    </li>
+                  ))}
+                  {venta.detalleVenta.length > 2 && (
+                    <li className="text-xs text-gray-500 italic">
+                      ...y {venta.detalleVenta.length - 2} más
+                    </li>
+                  )}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500 italic mt-1">Sin artículos</p>
+              )}
+            </div>
           </div>
         ))}
       </div>
