@@ -125,18 +125,51 @@ export default function ProveedorCard({ proveedor }: { proveedor: Proveedor }) {
 
                   <button
                     onClick={async () => {
-                      const confirm = window.confirm("¿Seguro que querés eliminar este proveedor?");
-                      if (confirm) {
-                        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedores/${proveedor.codProveedor}`, {
+                      const confirm = await Swal.fire({
+                        title: '¿Seguro que querés eliminar este proveedor?',
+                        text: 'Esta acción dará de baja el proveedor si es posible.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#aaa',
+                      });
+                      if (!confirm.isConfirmed) return;
+                    
+                      try {
+                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedores/${proveedor.codProveedor}`, {
                           method: 'DELETE',
                         });
+                        const data = await res.json();
+                      
+                        if (!res.ok) {
+                          throw new Error(data.error || 'No se pudo eliminar');
+                        }
+                      
+                        await Swal.fire({
+                          icon: 'success',
+                          title: 'Proveedor eliminado',
+                          text: 'El proveedor fue dado de baja correctamente.',
+                          confirmButtonColor: '#3085d6',
+                        });
                         setExpandido(false);
-                        window.location.reload();
+                        // 🔁 Avisá al padre que recargue la lista (ver punto 2)
+                        if (typeof window !== 'undefined' && window.dispatchEvent) {
+                          window.dispatchEvent(new Event('recargarProveedores'));
+                        }
+                      } catch (error: any) {
+                        await Swal.fire({
+                          icon: 'error',
+                          title: 'No se pudo eliminar',
+                          text: error.message,
+                          confirmButtonColor: '#d33',
+                        });
                       }
                     }}
                     className="flex items-center gap-1 text-red-600 hover:text-red-800 transition"
                     title="Eliminar"
-                  >
+                    >
                     <Trash2 className="w-5 h-5" />
                     <span className="text-sm">Eliminar</span>
                   </button>

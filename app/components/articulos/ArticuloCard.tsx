@@ -20,6 +20,12 @@ type Articulo = {
   proveedorPredeterminado?: {
     nombreProveedor: string;
   };
+  articuloProveedores?: {
+    proveedor: {
+      codProveedor: number;
+      nombreProveedor: string;
+    }
+  }[];
 };
 
 export default function ArticuloCard({
@@ -123,6 +129,16 @@ export default function ArticuloCard({
                   <strong>Proveedor Predeterminado:</strong>{' '}
                   {articulo.proveedorPredeterminado?.nombreProveedor ?? 'No asignado'}
                 </p>
+                  <strong>Proveedores:</strong>
+                  <div style={{ maxHeight: 80, overflowY: 'auto', border: '1px solid #eee', borderRadius: 4, padding: 4, marginTop: 4 }}>
+                    {articulo.articuloProveedores && articulo.articuloProveedores.length > 0 ? (
+                      articulo.articuloProveedores.map((ap) => (
+                        <div key={ap.proveedor.codProveedor}>{ap.proveedor.nombreProveedor}</div>
+                      ))
+                    ) : (
+                      <span>No hay proveedores asignados</span>
+                    )}
+                  </div>
                 <p>
                   <strong>CGI:</strong>{' '}
                   {articulo.cgi ? articulo.cgi : 'No asignado'}

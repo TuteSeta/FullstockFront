@@ -33,6 +33,12 @@ export default function ProveedoresPage() {
     fetchProveedores();
   }, []);
 
+  useEffect(() => {
+  const handler = () => fetchProveedores(!mostrarInactivos);
+  window.addEventListener('recargarProveedores', handler);
+  return () => window.removeEventListener('recargarProveedores', handler);
+  }, [mostrarInactivos]);
+
 
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
