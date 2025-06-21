@@ -14,11 +14,20 @@ type Props = {
   onSuccess: () => void;
 };
 
+// Helper para limpiar nulls (solo primer nivel)
+function cleanNulls(obj: any) {
+  const cleaned: any = {};
+  for (const key in obj) {
+    if (obj[key] !== null) cleaned[key] = obj[key];
+  }
+  return cleaned;
+}
+
 export default function ArticuloProveedorForm({ proveedorId, articulosAsignados, onSuccess }: Props) {
   const [articulosDisponibles, setArticulosDisponibles] = useState<Articulo[]>([]);
   const [formData, setFormData] = useState({
     codArticulo: '',
-    precioUnitarioAP: '',
+    costoUnitarioAP: '',
     cargoPedidoAP: '',
     demoraEntregaAP: '',
   });
@@ -36,20 +45,72 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const codArticuloNum = Number(formData.codArticulo);
+
+    // 1. Crear la relación proveedor-artículo
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         codProveedor: proveedorId,
-        codArticulo: Number(formData.codArticulo),
-        precioUnitarioAP: Number(formData.precioUnitarioAP),
+        codArticulo: codArticuloNum,
+        costoUnitarioAP: Number(formData.costoUnitarioAP),
         cargoPedidoAP: Number(formData.cargoPedidoAP),
         demoraEntregaAP: Number(formData.demoraEntregaAP),
       }),
     });
 
     if (res.ok) {
-      setFormData({ codArticulo: '', precioUnitarioAP: '', cargoPedidoAP: '', demoraEntregaAP: '' });
+      // Esperar un pequeño tiempo para asegurar que la relación esté guardada
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      // 2. Obtener el artículo actual
+      const articuloRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${codArticuloNum}`);
+      if (!articuloRes.ok) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo obtener el artículo para recalcular el modelo.',
+          confirmButtonColor: '#d33',
+        });
+        return;
+      }
+      const articulo = await articuloRes.json();
+
+      // 3. Limpiar nulls antes del PUT
+      const bodyPut = cleanNulls({
+        nombreArt: articulo.nombreArt,
+        descripcion: articulo.descripcion,
+        demanda: articulo.demanda,
+        precioArticulo: articulo.precioArticulo,
+        cantArticulo: articulo.cantArticulo,
+        costoMantenimiento: articulo.costoMantenimiento,
+        desviacionDemandaLArticulo: articulo.desviacionDemandaLArticulo,
+        desviacionDemandaTArticulo: articulo.desviacionDemandaTArticulo,
+        nivelServicioDeseado: articulo.nivelServicioDeseado,
+        modeloInventarioLoteFijo: articulo.modeloInventarioLoteFijo,
+        modeloInventarioIntervaloFijo: articulo.modeloInventarioIntervaloFijo,
+        codProveedorPredeterminado: proveedorId,
+        recalcularLoteFijo: true
+      });
+
+      const putRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${codArticuloNum}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyPut),
+      });
+
+      if (!putRes.ok) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo recalcular el modelo de lote fijo.',
+          confirmButtonColor: '#d33',
+        });
+        return;
+      }
+
+      setFormData({ codArticulo: '', costoUnitarioAP: '', cargoPedidoAP: '', demoraEntregaAP: '' });
       onSuccess();
       Swal.fire({
         icon: 'success',
@@ -96,8 +157,8 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
           <input
             type="number"
             className="w-full border rounded px-2 py-1"
-            value={formData.precioUnitarioAP}
-            onChange={(e) => setFormData({ ...formData, precioUnitarioAP: e.target.value })}
+            value={formData.costoUnitarioAP}
+            onChange={(e) => setFormData({ ...formData, costoUnitarioAP: e.target.value })}
             required
           />
         </div>
@@ -165,8 +226,8 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
                 <input
                   type="number"
                   className="w-24 border rounded px-2 py-1"
-                  value={formData.precioUnitarioAP}
-                  onChange={(e) => setFormData({ ...formData, precioUnitarioAP: e.target.value })}
+                  value={formData.costoUnitarioAP}
+                  onChange={(e) => setFormData({ ...formData, costoUnitarioAP: e.target.value })}
                   required
                 />
               </td>

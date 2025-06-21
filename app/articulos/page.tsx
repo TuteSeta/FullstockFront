@@ -16,9 +16,25 @@ type Articulo = {
   nombreArt: string;
   descripcion: string;
   cantArticulo: number;
-  cantMaxArticulo: number;
-  modeloInventario: string;
-  stockSeguridad: number;
+  precioArticulo: number;
+  ultimaRevision?: string | null;
+  cgi: number;
+  costoMantenimiento: number;
+  demanda: number;
+  desviacionDemandaLArticulo: number;
+  desviacionDemandaTArticulo: number;
+  nivelServicioDeseado: number;
+  modeloInventarioLoteFijo?: {
+    loteOptimo: number;
+    puntoPedido: number;
+    stockSeguridadLF: number;
+  };
+  modeloInventarioIntervaloFijo?: {
+    stockSeguridadIF: number;
+    cantidadPedido: number;
+    inventarioMaximo: number;
+    intervaloTiempo: number;
+  };
 };
 
 export default function ArticulosPage() {
@@ -28,13 +44,22 @@ export default function ArticulosPage() {
   const [filtros, setFiltros] = useState<{ nombre?: string }>({});
   const [page, setPage] = useState(1);
   const pageSize = 5;
+  const [filtroActivo, setFiltroActivo] = useState('');
 
 
-  const fetchArticulos = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos`);
-    const data = await res.json();
+  const fetchArticulos = async (filtro = '') => {
+  let url = `${process.env.NEXT_PUBLIC_API_URL}/articulos`;
+  if (filtro) url += `?filtro=${filtro}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+  if (Array.isArray(data)) {
     setArticulos(data);
-  };
+  } else {
+    setArticulos([]);
+    console.error('Error al obtener artículos:', data);
+  }
+};
 
   useEffect(() => {
     fetchArticulos();
@@ -79,7 +104,7 @@ export default function ArticulosPage() {
       Swal.fire({
         icon: 'error',
         title: 'Error al eliminar',
-        text: 'No se pudo eliminar el artículo. Puede estar relacionado con ventas u órdenes.',
+        text: 'No se pudo eliminar el artículo. Puede estar relacionado con ordenes pendientes/enviadas o stock disponible.',
         confirmButtonColor: '#d33',
       });
     }
@@ -100,32 +125,63 @@ export default function ArticulosPage() {
       let registrosExitosos = 0;
       let registrosFallidos: string[] = [];
 
+      const resProveedores = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedores`);
+      const proveedores = await resProveedores.json();
+
       const articulosParseados = (json as any[]).map((row, idx) => {
+        console.log(`Fila ${idx + 2}:`, row); // 👈 esto
+        const codProveedor = (proveedores as { codProveedor: number; nombreProveedor: string }[]).find(
+          (p) => p.nombreProveedor?.toLowerCase().trim() === String(row['proveedor']).toLowerCase().trim()
+        )?.codProveedor ?? null;
+
+        const modeloInventarioRaw = Number(row['modeloInventario']);
+        const modeloSeleccionado =
+          modeloInventarioRaw === 1 ? 'loteFijo' :
+            modeloInventarioRaw === 2 ? 'intervaloFijo' : '';
+
+
+        const basePayload: any = {
+          nombreArt: row['nombreArt'] || '',
+          descripcion: row['descripcion'] || '',
+          demanda: Number(row['demanda'] ?? 0),
+          precioArticulo: Number(row['precioArticulo'] ?? 0),
+          cantArticulo: Number(row['cantArticulo'] ?? 0),
+          costoMantenimiento: Number(row['costoMantenimiento'] ?? 0),
+          desviacionDemandaLArticulo: Number(row['desviacionDemandaLArticulo'] ?? 0),
+          desviacionDemandaTArticulo: Number(row['desviacionDemandaTArticulo'] ?? 0),
+          nivelServicioDeseado: Number(row['nivelServicioDeseado'] ?? 0),
+          codProveedorPredeterminado: codProveedor,
+          recalcularLoteFijo: modeloSeleccionado === 'loteFijo',
+        };
+
+        if (modeloSeleccionado === 'loteFijo') {
+          basePayload.modeloInventarioLoteFijo = {
+            loteOptimo: 0,
+            puntoPedido: 0,
+            stockSeguridadLF: 0,
+          };
+          delete basePayload.modeloInventarioIntervaloFijo;
+        } else if (modeloSeleccionado === 'intervaloFijo') {
+          const intervalo = Number(row['intervaloTiempo']);
+          basePayload.modeloInventarioIntervaloFijo = isNaN(intervalo)
+            ? undefined
+            : {
+              intervaloTiempo: intervalo,
+              inventarioMaximo: 0,
+              stockSeguridadIF: 0,
+              cantidadPedido: 0,
+            };
+          delete basePayload.modeloInventarioLoteFijo;
+        }
+        else {
+          delete basePayload.modeloInventarioLoteFijo;
+          delete basePayload.modeloInventarioIntervaloFijo;
+          basePayload.codProveedorPredeterminado = null;
+        }
+
         return {
-          index: idx + 2, // para indicar la fila del Excel (asumiendo encabezados)
-          payload: {
-            nombreArt: row['nombreArt'] || '',
-            descripcion: row['descripcion'] || '',
-            demanda: Number(row['demanda'] || 0),
-            cantArticulo: Number(row['cantArticulo'] || 0),
-            cantMaxArticulo: Number(row['cantMaxArticulo'] || 0),
-            costoAlmacenamiento: Number(row['costoAlmacenamiento'] || 0),
-            costoMantenimiento: Number(row['costoMantenimiento'] || 0),
-            costoPedido: Number(row['costoPedido'] || 0),
-            costoCompra: Number(row['costoCompra'] || 0),
-            desviacionDemandaLArticulo: Number(row['desviacionDemandaLArticulo'] || 0),
-            desviacionDemandaTArticulo: Number(row['desviacionDemandaTArticulo'] || 0),
-            nivelServicioDeseado: Number(row['nivelServicioDeseado'] || 0),
-            modeloInventarioLoteFijo: row['loteOptimo'] != null ? {
-              loteOptimo: Number(row['loteOptimo']),
-              puntoPedido: Number(row['puntoPedido']),
-              stockSeguridadLF: Number(row['stockSeguridadLF'])
-            } : undefined,
-            modeloInventarioIntervaloFijo: row['intervaloTiempo'] != null ? {
-              intervaloTiempo: Number(row['intervaloTiempo']),
-              stockSeguridadIF: Number(row['stockSeguridadIF'])
-            } : undefined
-          }
+          index: idx + 2,
+          payload: basePayload,
         };
       });
 
@@ -138,7 +194,6 @@ export default function ArticulosPage() {
           });
 
           if (!res.ok) throw new Error('Error al crear artículo');
-
           registrosExitosos++;
         } catch (err) {
           console.error(err);
@@ -146,7 +201,7 @@ export default function ArticulosPage() {
         }
       }
 
-      fetchArticulos();
+      await fetchArticulos();
 
       if (registrosExitosos > 0) {
         Swal.fire({
@@ -178,7 +233,6 @@ export default function ArticulosPage() {
   };
 
 
-
   const articulosFiltrados = articulos.filter((a) =>
     filtros.nombre ? a.nombreArt.toLowerCase().includes(filtros.nombre.toLowerCase()) : true
   );
@@ -202,7 +256,7 @@ export default function ArticulosPage() {
         <BackButton />
 
         {/* Encabezado responsive */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 flex-wrap">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 mb-6 flex-wrap">
           <div className="flex items-center">
             <Boxes className="w-7 h-7 text-blue-600" />
             <h1 className="text-3xl font-bold ml-2">Gestión de artículos</h1>
@@ -238,13 +292,34 @@ export default function ArticulosPage() {
           </button>
         </div>
 
+        <div className="flex gap-2 mb-4">
+          <button
+            className={`px-4 py-2 rounded ${filtroActivo === '' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            onClick={() => { fetchArticulos(''); setFiltroActivo(''); setPage(1); }}
+          >
+            Todos
+          </button>
+          <button
+            className={`px-4 py-2 rounded ${filtroActivo === 'punto-pedido' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            onClick={() => { fetchArticulos('punto-pedido'); setFiltroActivo('punto-pedido'); setPage(1); }}
+          >
+            A Reponer
+          </button>
+          <button
+            className={`px-4 py-2 rounded ${filtroActivo === 'stock-seguridad' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            onClick={() => { fetchArticulos('stock-seguridad'); setFiltroActivo('stock-seguridad'); setPage(1); }}
+          >
+            Faltantes
+          </button>
+        </div>
+
         {/* Encabezado de tabla */}
         <div className="hidden sm:grid grid-cols-6 gap-4 mb-4 p-4 bg-gray-200 rounded-lg text-sm font-semibold">
           <div>Nombre</div>
           <div className="text-center">Código</div>
           <div className="text-center">Cantidad</div>
-          <div className="text-center">Cantidad Máx.</div>
           <div className="text-center">Modelo</div>
+          <div className="text-center">Precio</div>
           <div className="text-center">Stock Seguridad</div>
         </div>
 
@@ -306,7 +381,7 @@ export default function ArticulosPage() {
                 className="fixed inset-0 z-50 flex items-center justify-center px-4"
               >
                 <div
-                  className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full text-gray-800 relative"
+                  className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto text-gray-800 relative"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button

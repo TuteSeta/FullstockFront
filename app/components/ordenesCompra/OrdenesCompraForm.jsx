@@ -1,18 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from 'react';
 
 export default function OrdenesCompraForm({ proveedores, articulos, onSuccess }) {
   const [codProveedor, setCodProveedor] = useState("");
   const [detalleOC, setDetalleOC] = useState([]);
   const [codArticulo, setCodArticulo] = useState("");
   const [cantidadDOC, setCantidadDOC] = useState("");
-  const [montoDOC, setMontoDOC] = useState("");
+  const [articulosProveedor, setArticulosProveedor] = useState([]);
+  const [precioActual, setPrecioActual] = useState(null);
+
+  // Cargar artículos del proveedor seleccionado
+  useEffect(() => {
+    if (codProveedor) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos/proveedor/${codProveedor}`)
+        .then(res => res.json())
+        .then(data => setArticulosProveedor(data.map(r => ({
+          codArticulo: r.articulo.codArticulo,
+          nombreArt: r.articulo.nombreArt,
+          precioUnitarioAP: r.precioUnitarioAP ?? r.costoUnitarioAP ?? 0
+        }))));
+    } else {
+      setArticulosProveedor([]);
+    }
+    setCodArticulo("");
+    setPrecioActual(null);
+  }, [codProveedor]);
+
+  // Actualizar precio cuando cambia el artículo
+  useEffect(() => {
+    if (codArticulo) {
+      const art = articulosProveedor.find(a => a.codArticulo === parseInt(codArticulo));
+      console.log("Precio encontrado:", art?.precioUnitarioAP, "Tipo:", typeof art?.precioUnitarioAP);
+      setPrecioActual(art ? art.precioUnitarioAP : null);
+    } else {
+      setPrecioActual(null);
+    }
+  }, [codArticulo, articulosProveedor]);
 
   // Agregar artículo a la orden
   const agregarArticulo = () => {
-    if (!codArticulo || !cantidadDOC || !montoDOC) return;
+    if (!codArticulo || !cantidadDOC) return;
     const articulo = articulos.find(a => a.codArticulo === parseInt(codArticulo));
+    const articuloProveedor = articulosProveedor.find(a => a.codArticulo === parseInt(codArticulo));
+    if (!articulo || !articuloProveedor || typeof articuloProveedor.precioUnitarioAP !== "number") {
+      alert("Error: no se pudo obtener el precio del artículo.");
+      return;
+    }
     if (!articulo) return;
     setDetalleOC(prev => [
       ...prev,
@@ -20,12 +54,12 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         codArticulo: articulo.codArticulo,
         nombreArt: articulo.nombreArt,
         cantidadDOC: parseInt(cantidadDOC),
-        montoDOC: parseFloat(montoDOC),
+        montoDOC: articuloProveedor.precioUnitarioAP * parseInt(cantidadDOC), // solo para mostrar
       }
     ]);
     setCodArticulo("");
     setCantidadDOC("");
-    setMontoDOC("");
+    setPrecioActual(null);
   };
 
   // Eliminar artículo de la orden
@@ -51,7 +85,6 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         detalleOC: detalleOC.map(a => ({
           codArticulo: a.codArticulo,
           cantidadDOC: a.cantidadDOC,
-          montoDOC: a.montoDOC,
         })),
       }),
     });
@@ -95,7 +128,7 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
           className="border border-gray-300 rounded px-3 py-2 bg-white text-gray-800"
         >
           <option value="">Seleccione un artículo</option>
-          {articulos
+          {articulosProveedor
             .filter(a => !detalleOC.some(d => d.codArticulo === a.codArticulo))
             .map(a => (
               <option key={a.codArticulo} value={a.codArticulo}>
@@ -103,6 +136,7 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
               </option>
             ))}
         </select>
+
         <input
           type="number"
           min="1"
@@ -111,15 +145,16 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
           onChange={e => setCantidadDOC(e.target.value)}
           className="border border-gray-300 rounded px-3 py-2 w-24 text-gray-800 bg-white"
         />
-        <input
-          type="number"
-          min="0"
-          step="0.01"
-          placeholder="Monto"
-          value={montoDOC}
-          onChange={e => setMontoDOC(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 w-24 text-gray-800 bg-white"
-        />
+
+        {/* Mostrar el precio unitario y el monto calculado */}
+        {precioActual !== null && cantidadDOC ? (
+          <div className="flex items-center text-gray-700">
+            <span className="ml-2">
+              Precio: ${precioActual} | Monto: ${Number(precioActual) * Number(cantidadDOC)}
+            </span>
+          </div>
+        ) : null}
+
         <button
           type="button"
           onClick={agregarArticulo}

@@ -7,9 +7,25 @@ type Articulo = {
   nombreArt: string;
   descripcion: string;
   cantArticulo: number;
-  cantMaxArticulo: number;
-  modeloInventarioIntervaloFijo?: { stockSeguridadIF: number };
-  modeloInventarioLoteFijo?: { stockSeguridadLF: number };
+  precioArticulo: number;
+  ultimaRevision?: string | null;
+  cgi: number;
+  modeloInventarioIntervaloFijo?: {
+    stockSeguridadIF: number;
+    inventarioMaximo: number;
+    intervaloTiempo: number;
+    cantidadPedido: number;
+  };
+  modeloInventarioLoteFijo?: { stockSeguridadLF: number, loteOptimo: number, puntoPedido: number, };
+  proveedorPredeterminado?: {
+    nombreProveedor: string;
+  };
+  articuloProveedores?: {
+    proveedor: {
+      codProveedor: number;
+      nombreProveedor: string;
+    }
+  }[];
 };
 
 export default function ArticuloCard({
@@ -28,6 +44,10 @@ export default function ArticuloCard({
     articulo.modeloInventarioLoteFijo?.stockSeguridadLF ??
     articulo.modeloInventarioIntervaloFijo?.stockSeguridadIF ??
     'N/A';
+
+  const ultimaRevisionFormateada = articulo.ultimaRevision
+    ? new Date(articulo.ultimaRevision).toLocaleString()
+    : 'Sin revisión';
 
   return (
     <>
@@ -48,12 +68,12 @@ export default function ArticuloCard({
           {articulo.cantArticulo}
         </div>
         <div className="text-sm text-gray-700 sm:text-center">
-          <span className="block sm:hidden font-semibold">Cantidad Máx.: </span>
-          {articulo.cantMaxArticulo}
-        </div>
-        <div className="text-sm text-gray-700 sm:text-center">
           <span className="block sm:hidden font-semibold">Modelo: </span>
           {modelo}
+        </div>
+        <div className="text-sm text-gray-700 sm:text-center">
+          <span className="block sm:hidden font-semibold">Precio: </span>
+          {articulo.precioArticulo}
         </div>
         <div className="text-sm text-gray-700 sm:text-center">
           <span className="block sm:hidden font-semibold">Stock Seguridad: </span>
@@ -97,14 +117,61 @@ export default function ArticuloCard({
                   <strong>Cantidad Actual:</strong> {articulo.cantArticulo}
                 </p>
                 <p>
-                  <strong>Cantidad Máxima:</strong> {articulo.cantMaxArticulo}
+                  <strong>Precio articulo:</strong> {articulo.precioArticulo}
+                </p>
+                <p>
+                  <strong>Última Revisión:</strong> {ultimaRevisionFormateada}
                 </p>
                 <p>
                   <strong>Modelo de Inventario:</strong> {modelo}
                 </p>
                 <p>
-                  <strong>Stock de Seguridad:</strong> {stockSeguridad}
+                  <strong>Proveedor Predeterminado:</strong>{' '}
+                  {articulo.proveedorPredeterminado?.nombreProveedor ?? 'No asignado'}
                 </p>
+                  <strong>Proveedores:</strong>
+                  <div style={{ maxHeight: 80, overflowY: 'auto', border: '1px solid #eee', borderRadius: 4, padding: 4, marginTop: 4 }}>
+                    {articulo.articuloProveedores && articulo.articuloProveedores.length > 0 ? (
+                      articulo.articuloProveedores.map((ap) => (
+                        <div key={ap.proveedor.codProveedor}>{ap.proveedor.nombreProveedor}</div>
+                      ))
+                    ) : (
+                      <span>No hay proveedores asignados</span>
+                    )}
+                  </div>
+                <p>
+                  <strong>CGI:</strong>{' '}
+                  {articulo.cgi ? articulo.cgi : 'No asignado'}
+                </p>
+                {articulo.modeloInventarioLoteFijo && (
+                  <>
+                    <p>
+                      <strong>Lote Óptimo:</strong> {articulo.modeloInventarioLoteFijo.loteOptimo}
+                    </p>
+                    <p>
+                      <strong>Punto de Pedido:</strong> {articulo.modeloInventarioLoteFijo.puntoPedido}
+                    </p>
+                    <p>
+                      <strong>Stock de Seguridad:</strong> {articulo.modeloInventarioLoteFijo.stockSeguridadLF}
+                    </p>
+                  </>
+                )}
+                {articulo.modeloInventarioIntervaloFijo && (
+                  <>
+                    <p>
+                      <strong>Intervalo de Tiempo:</strong> {articulo.modeloInventarioIntervaloFijo.intervaloTiempo} días
+                    </p>
+                    <p>
+                      <strong>Inventario Máximo:</strong> {articulo.modeloInventarioIntervaloFijo.inventarioMaximo}
+                    </p>
+                    <p>
+                      <strong>Stock de Seguridad:</strong> {articulo.modeloInventarioIntervaloFijo.stockSeguridadIF}
+                    </p>
+                    <p>
+                      <strong>Cantidad a pedir:</strong> {articulo.modeloInventarioIntervaloFijo.cantidadPedido}
+                    </p>
+                  </>
+                )}
 
                 <div className="mt-4 flex flex-wrap justify-end gap-2">
                   <button

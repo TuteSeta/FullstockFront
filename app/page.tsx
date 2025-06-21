@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-interface VentaMensual {
+interface VentaDiaria {
   date: string;
   totalVentas: number;
 }
@@ -57,7 +57,7 @@ function StatCard({
 }
 
 export default function Home() {
-  const [chartdata, setChartdata] = useState<VentaMensual[]>([]);
+  const [chartdata, setChartdata] = useState<VentaDiaria[]>([]);
   const [totalArticulos, setTotalArticulos] = useState<number | null>(null);
   const [delta, setDelta] = useState<number | null>(null);
   const [stockDisponible, setStockDisponible] = useState<number | null>(null);
@@ -110,10 +110,14 @@ export default function Home() {
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/ventas/dashboard/ventas-diarias`)
-      .then(res => res.json())
-      .then(data => setChartdata(data))
-      .catch(err => console.error("Error al cargar ventas:", err));
+      .then((res) => res.json())
+      .then((data: VentaDiaria[]) => {
+        console.log("Datos de ventas diarias:", data); // 👈 LOG
+        setChartdata(data);
+      })
+      .catch((err) => console.error("Error al cargar ventas:", err));
   }, []);
+
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/historico`)
@@ -230,19 +234,30 @@ export default function Home() {
 
         {/* Chart */}
         <div className="w-1/2 mt-12">
-          <h2 className="font-bold text-2xl text-white">Gráfico de ventas</h2>
+          <h2 className="font-bold text-2xl text-white ">Gráfico de ventas</h2>
           <AreaChart
-            className="h-80 text-white mt-5 "
+            className="h-80 mt-5 text-blue-500 
+    [&_.recharts-cartesian-axis-tick-value]:fill-blue-500 
+    [&_.recharts-label]:fill-blue-600 
+    [&_.recharts-dot]:fill-blue-500 
+    [&_.recharts-active-dot]:fill-white 
+    [&_.recharts-cartesian-axis-tick]:text-xs" // 👉 tamaño más chico por si hay más fechas
             data={chartdata}
             index="date"
             categories={["totalVentas"]}
+            colors={["blue"]}
+            showLegend={false}
+            showXAxis={true}
+            showYAxis={true}
+            xAxisLabel="Mes"
+            yAxisLabel="USD"
             valueFormatter={(number: number) =>
               `$${Intl.NumberFormat("en-US").format(number)}`
             }
-            showLegend={false}
-            xAxisLabel="Mes"
-            yAxisLabel="USD"
           />
+
+
+
         </div>
       </div>
     </main>

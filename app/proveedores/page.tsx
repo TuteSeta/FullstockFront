@@ -33,6 +33,12 @@ export default function ProveedoresPage() {
     fetchProveedores();
   }, []);
 
+  useEffect(() => {
+  const handler = () => fetchProveedores(!mostrarInactivos);
+  window.addEventListener('recargarProveedores', handler);
+  return () => window.removeEventListener('recargarProveedores', handler);
+  }, [mostrarInactivos]);
+
 
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,7 +58,7 @@ export default function ProveedoresPage() {
         const {
           nombreProveedor,
           nombreArt,
-          precioUnitarioAP,
+          costoUnitarioAP, // ✅ Campo correcto
           cargoPedidoAP,
           demoraEntregaAP,
         } = row;
@@ -103,10 +109,11 @@ export default function ProveedoresPage() {
           body: JSON.stringify({
             codProveedor,
             codArticulo: articulo.codArticulo,
-            precioUnitarioAP: Number(precioUnitarioAP),
+            costoUnitarioAP: Number(costoUnitarioAP), // ✅ corregido
             cargoPedidoAP: Number(cargoPedidoAP),
             demoraEntregaAP: Number(demoraEntregaAP),
           }),
+
         });
 
         if (!relRes.ok) {
@@ -130,7 +137,7 @@ export default function ProveedoresPage() {
         Swal.fire({
           icon: 'error',
           title: 'Error en la importación',
-          text: 'No se pudo importar ningún registro. Verifica el Excel y los datos.',
+          text: 'No se pudo importar ningún registro. Verifica el Excel y los datos.',  
           confirmButtonColor: '#d33',
         });
       }
