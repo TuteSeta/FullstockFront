@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Pencil, Check, X, Trash2 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 export default function OrdenesCompraList({ ordenes, onSuccess }) {
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
@@ -10,37 +11,69 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
   const [newCantidad, setNewCantidad] = useState("");
   const [cantidadError, setCantidadError] = useState("");
 
-  const handleEnviarOrden = async (nroOrdenCompra) => {
-    const confirmar = window.confirm("¿Enviar esta orden? No podrá ser modificada ni cancelada.");
-    if (!confirmar) return;
+const handleEnviarOrden = async (nroOrdenCompra) => {
+  const result = await Swal.fire({
+    title: '¿Enviar esta orden?',
+    text: 'No podrá ser modificada ni cancelada.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#2563eb',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Sí, enviar',
+    cancelButtonText: 'Cancelar'
+  });
 
+  if (result.isConfirmed) {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes/${nroOrdenCompra}/enviar`, {
       method: "PATCH",
     });
 
     if (res.ok) {
+      await Swal.fire({
+        icon: 'success',
+        title: 'Enviada',
+        text: 'La orden fue enviada exitosamente.',
+        confirmButtonColor: '#16a34a'
+      });
       onSuccess?.();
       setOrdenSeleccionada(null);
     } else {
       const error = await res.json();
-      alert(error.error || "Error al enviar la orden.");
+      Swal.fire('Error', error.error || "Error al enviar la orden.", 'error');
     }
-  };
+  }
+};
 
-  const handleFinalizarOrden = async (nroOrdenCompra) => {
-    const confirmar = window.confirm("¿Marcar esta orden como finalizada y actualizar stock?");
-    if (!confirmar) return;
+const handleFinalizarOrden = async (nroOrdenCompra) => {
+  const result = await Swal.fire({
+    title: '¿Finalizar esta orden?',
+    text: 'Se actualizará el stock y no podrá revertirse.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#16a34a',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Sí, finalizar',
+    cancelButtonText: 'Cancelar'
+  });
 
+  if (result.isConfirmed) {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes/${nroOrdenCompra}/finalizar`, {
       method: "PATCH",
     });
 
     if (res.ok) {
+      await Swal.fire({
+        icon: 'success',
+        title: 'Finalizada',
+        text: 'La orden fue finalizada y el stock actualizado.',
+        confirmButtonColor: '#16a34a'
+      });
       onSuccess?.();
       setOrdenSeleccionada(null);
     } else {
       const error = await res.json();
-      alert(error.error || "Error al finalizar la orden.");
+      Swal.fire('Error', error.error || "Error al finalizar la orden.", 'error');
+    }
     }
   };
 
@@ -54,19 +87,35 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
     }
   }, [ordenes]);
 
-  const handleEliminarOrden = async (nroOrdenCompra) => {
-    const confirmar = window.confirm("¿Estás seguro de que deseas eliminar esta orden?");
-    if (!confirmar) return;
+const handleEliminarOrden = async (nroOrdenCompra) => {
+  const result = await Swal.fire({
+    title: '¿Estás seguro?',
+    text: 'Esta acción eliminará la orden de forma permanente.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  });
 
+  if (result.isConfirmed) {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes/${nroOrdenCompra}`, {
       method: "DELETE",
     });
 
     if (res.ok) {
+      await Swal.fire({
+        icon: 'success',
+        title: 'Eliminado',
+        text: 'La orden fue eliminada exitosamente.',
+        confirmButtonColor: '#16a34a'
+      });
       setOrdenSeleccionada(null);
       onSuccess?.();
     } else {
-      alert("Error al eliminar la orden.");
+      Swal.fire('Error', 'Error al eliminar la orden.', 'error');
+    }
     }
   };
 
@@ -205,7 +254,12 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
                   <div className="text-center">Acciones</div>
                 </div>
 
-                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                <div
+                  className="space-y-2 overflow-y-auto pr-1"
+                  style={{
+                    maxHeight: ordenSeleccionada.detalleOrdenCompra.length > 3 ? "200px" : "none"
+                  }}
+                >
                   {ordenSeleccionada.detalleOrdenCompra.map((detalle, index) => (
                     <div key={detalle.nroRenglonDOC} className="grid grid-cols-5 gap-4 bg-white p-2 rounded shadow-sm items-center text-sm text-black">
                       <div>{detalle.codArticulo}</div>
