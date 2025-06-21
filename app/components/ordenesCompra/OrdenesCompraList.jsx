@@ -132,17 +132,17 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
             className="grid grid-cols-4 gap-4 items-center px-4 py-2 bg-white border rounded shadow-sm cursor-pointer hover:scale-[1.01] transition-transform"
             onClick={() => setOrdenSeleccionada(orden)}
           >
-            <div className="font-medium text-gray-800">#{orden.nroOrdenCompra}</div>
-            <div className="text-sm text-gray-700">{new Date(orden.fechaCreacion).toLocaleDateString()}</div>
-            <div className="text-sm text-gray-700">${orden.montoOrdenCompra}</div>
+            <div className="font-medium text-black">#{orden.nroOrdenCompra}</div>
+            <div className="text-sm text-black">{new Date(orden.fechaCreacion).toLocaleDateString()}</div>
+            <div className="text-sm text-black">${orden.montoOrdenCompra}</div>
             <div>
               <span className={`text-xs font-semibold px-2 py-1 rounded-full ${orden.estadoOrdenCompra?.nombreEstadoOC === 'Pendiente'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : orden.estadoOrdenCompra?.nombreEstadoOC === 'Enviada'
-                    ? 'bg-blue-100 text-blue-800'
-                    : orden.estadoOrdenCompra?.nombreEstadoOC === 'Finalizada'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-200 text-gray-700'
+                ? 'bg-yellow-100 text-yellow-800'
+                : orden.estadoOrdenCompra?.nombreEstadoOC === 'Enviada'
+                  ? 'bg-blue-100 text-blue-800'
+                  : orden.estadoOrdenCompra?.nombreEstadoOC === 'Finalizada'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-200 text-gray-700'
                 }`}>
                 {orden.estadoOrdenCompra?.nombreEstadoOC ?? 'Desconocido'}
               </span>
@@ -172,7 +172,7 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
             >
               <motion.div
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative"
+                className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative"
               >
                 <button
                   onClick={() => setOrdenSeleccionada(null)}
@@ -189,86 +189,81 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
                   Fecha: {new Date(ordenSeleccionada.fechaCreacion).toLocaleDateString()}
                 </p>
                 <p className="mb-2 text-black">
-                  Estado actual:{" "}
-                  <span className="font-semibold">
-                    {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC || "Desconocido"}
-                  </span>
+                  Estado actual: <span className="font-semibold">{ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC || "Desconocido"}</span>
                 </p>
                 <p className="mb-4 text-black">
                   Monto total: <span className="font-semibold">${ordenSeleccionada.montoOrdenCompra}</span>
                 </p>
 
                 <h3 className="font-semibold mb-2 text-black">Artículos Solicitados:</h3>
-                <ul className="text-sm text-black space-y-4">
+
+                <div className="grid grid-cols-5 gap-4 bg-gray-200 p-2 rounded text-sm font-semibold text-black mb-2">
+                  <div>Código</div>
+                  <div>Nombre</div>
+                  <div className="text-center">Cantidad</div>
+                  <div className="text-center">Monto</div>
+                  <div className="text-center">Acciones</div>
+                </div>
+
+                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                   {ordenSeleccionada.detalleOrdenCompra.map((detalle, index) => (
-                    <li
-                      key={detalle.nroRenglonDOC}
-                      className="flex justify-between items-start border-b pb-2"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium">{detalle.nombreArt || detalle.codArticulo}</p>
-                        <div className="mt-1 space-y-1 text-sm">
-                          <div><strong>Código:</strong> {detalle.codArticulo}</div>
-                          <div>
-                            <strong>Cantidad:</strong>{" "}
+                    <div key={detalle.nroRenglonDOC} className="grid grid-cols-5 gap-4 bg-white p-2 rounded shadow-sm items-center text-sm text-black">
+                      <div>{detalle.codArticulo}</div>
+                      <div>{detalle.articulo?.nombreArt ?? 'Sin nombre'}</div>
+                      <div className="text-center">
+                        {editandoIndex === index ? (
+                          <div className="flex justify-center items-center gap-1">
+                            <input
+                              type="number"
+                              min={1}
+                              value={newCantidad}
+                              onChange={(e) => {
+                                setNewCantidad(e.target.value);
+                                setCantidadError('');
+                              }}
+                              className="border rounded px-1 py-0.5 w-16 text-center"
+                            />
+                          </div>
+                        ) : (
+                          detalle.cantidadDOC
+                        )}
+                        {editandoIndex === index && cantidadError && (
+                          <div className="text-red-600 text-xs mt-1 col-span-5">{cantidadError}</div>
+                        )}
+                      </div>
+                      <div className="text-center">${detalle.montoDOC}</div>
+                      <div className="flex justify-center gap-2">
+                        {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Pendiente" && (
+                          <>
                             {editandoIndex === index ? (
                               <>
-                                <input
-                                  type="number"
-                                  min={1}
-                                  value={newCantidad}
-                                  onChange={(e) => {
-                                    setNewCantidad(e.target.value);
-                                    setCantidadError("");
-                                  }}
-                                  className="border rounded px-1 ml-2 py-1"
-                                />
-                                {cantidadError && (
-                                  <div className="text-red-600 text-xs mt-1">{cantidadError}</div>
-                                )}
+                                <button onClick={() => saveEditing(detalle)} className="text-green-600 hover:text-green-800">
+                                  <Check className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => setEditandoIndex(null)} className="text-gray-600 hover:text-gray-800">
+                                  <X className="w-4 h-4" />
+                                </button>
                               </>
                             ) : (
-                              detalle.cantidadDOC
+                              <button onClick={() => startEditing(index, detalle.cantidadDOC)} className="text-blue-600 hover:text-blue-800">
+                                <Pencil className="w-4 h-4" />
+                              </button>
                             )}
-                          </div>
-                          <div><strong>Monto:</strong> ${detalle.montoDOC}</div>
-                        </div>
-                      </div>
-
-                      {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Pendiente" && (
-                        <>
-                          {editandoIndex === index ? (
-                            <>
-                              <button onClick={() => saveEditing(detalle)} className="text-green-600 hover:text-green-800 ml-2">
-                                <Check className="w-4 h-4" />
-                              </button>
-                              <button onClick={() => setEditandoIndex(null)} className="text-gray-600 hover:text-gray-800 ml-2">
-                                <X className="w-4 h-4" />
-                              </button>
-                            </>
-                          ) : (
-                            <button onClick={() => startEditing(index, detalle.cantidadDOC)} className="text-blue-600 hover:text-blue-800 ml-2">
-                              <Pencil className="w-4 h-4" />
+                            <button onClick={() => handleEliminarArticulo(ordenSeleccionada.nroOrdenCompra, detalle.nroRenglonDOC)} className="text-red-600 hover:text-red-800">
+                              <Trash2 className="w-4 h-4" />
                             </button>
-                          )}
-
-                          <button
-                            onClick={() => handleEliminarArticulo(ordenSeleccionada.nroOrdenCompra, detalle.nroRenglonDOC)}
-                            className="text-red-600 hover:text-red-800 ml-2"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </>
-                      )}
-                    </li>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
 
                 {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Pendiente" && (
-                  <>
+                  <div className="flex justify-between flex-row mt-4">
                     <button
                       onClick={() => handleEliminarOrden(ordenSeleccionada.nroOrdenCompra)}
-                      className="mt-6 flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+                      className="flex items-center h-[40px] gap-2 bg-red-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-red-700 transition"
                     >
                       <Trash2 className="w-4 h-4" />
                       Eliminar orden
@@ -276,18 +271,18 @@ export default function OrdenesCompraList({ ordenes, onSuccess }) {
 
                     <button
                       onClick={() => handleEnviarOrden(ordenSeleccionada.nroOrdenCompra)}
-                      className="mt-2 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                      className="flex items-center h-[40px] gap-2 bg-blue-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-blue-700 transition"
                     >
                       <Check className="w-4 h-4" />
                       Enviar orden
                     </button>
-                  </>
+                  </div>
                 )}
 
                 {ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC === "Enviada" && (
                   <button
                     onClick={() => handleFinalizarOrden(ordenSeleccionada.nroOrdenCompra)}
-                    className="mt-2 flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                    className="mt-4 flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
                   >
                     <Check className="w-4 h-4" />
                     Finalizar orden
