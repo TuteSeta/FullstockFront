@@ -3,28 +3,47 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Pencil, Check, X, Trash2 } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export default function VentasList({ ventas, onSuccess }) {
   const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
   const [editandoIndex, setEditandoIndex] = useState(null);
   const [newCantidad, setNewCantidad] = useState("");
+  const [cantidadError, setCantidadError] = useState("");
 
   if (!ventas || !Array.isArray(ventas) || !ventas.length) {
     return <p className="text-gray-600">No hay ventas registradas.</p>;
   }
 
   const handleEliminarVenta = async (nroVenta) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta venta?')) return;
-
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ventas/${nroVenta}`, {
-      method: 'DELETE',
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción eliminará la venta de forma permanente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
     });
 
-    if (res.ok) {
-      setVentaSeleccionada(null);
-      onSuccess?.();
-    } else {
-      alert('Error al eliminar la venta.');
+    if (result.isConfirmed) {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ventas/${nroVenta}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Eliminado',
+          text: 'La venta fue eliminada exitosamente.',
+          confirmButtonColor: '#16a34a'
+        });
+        setVentaSeleccionada(null);
+        onSuccess?.();
+      } else {
+        Swal.fire('Error', 'No se pudo eliminar la venta.', 'error');
+      }
     }
   };
 
@@ -84,9 +103,15 @@ export default function VentasList({ ventas, onSuccess }) {
   const startEditing = (index, cantidad) => {
     setEditandoIndex(index);
     setNewCantidad(cantidad);
+    setCantidadError("");
   };
 
   const saveEditing = (detalle) => {
+    if (!newCantidad || Number(newCantidad) < 1) {
+      setCantidadError("La cantidad debe ser mayor o igual a 1");
+      return;
+    }
+    setCantidadError("");
     handleEditarArticulo(detalle.nroRenglonDV, Number(newCantidad));
   };
 
@@ -143,7 +168,7 @@ export default function VentasList({ ventas, onSuccess }) {
             >
               <motion.div
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white max-w-lg w-full p-6 rounded-lg shadow-xl relative"
+                className="bg-white max-w-3xl w-full p-6 rounded-lg shadow-xl relative"
               >
                 <button
                   onClick={() => setVentaSeleccionada(null)}
@@ -163,56 +188,72 @@ export default function VentasList({ ventas, onSuccess }) {
                 </p>
 
                 <h3 className="font-semibold mb-2 text-gray-700">Artículos Vendidos:</h3>
-                <ul className="space-y-3 divide-y divide-gray-200">
+
+                <div className="grid grid-cols-5 gap-4 bg-gray-200 p-2 rounded text-sm font-semibold text-black mb-2">
+                  <div>Nombre</div>
+                  <div>Código</div>
+                  <div className="text-center">Cantidad</div>
+                  <div className="text-center">Subtotal</div>
+                  <div className="text-center">Acciones</div>
+                </div>
+
+                <div
+                  className="space-y-2 overflow-y-auto pr-1"
+                  style={{
+                    maxHeight: ventaSeleccionada.detalleVenta.length > 3 ? "200px" : "none"
+                  }}
+                >
                   {ventaSeleccionada.detalleVenta?.map((detalle, index) => (
-                    <li key={detalle.nroRenglonDV} className="pt-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-gray-800 font-medium">{detalle.articulo?.nombreArt}</p>
-                          <p className="text-sm text-gray-600">
-                            Código: {detalle.articulo?.codArticulo}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Cantidad: {editandoIndex === index ? (
-                              <input
-                                type="number"
-                                value={newCantidad}
-                                onChange={(e) => setNewCantidad(e.target.value)}
-                                className="border rounded px-2 py-1 w-16 ml-2"
-                              />
-                            ) : (
-                              detalle.cantidad
-                            )}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Subtotal: ${detalle.montoDetalleVenta}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col items-center gap-1">
-                          {editandoIndex === index ? (
-                            <>
-                              <button onClick={() => saveEditing(detalle)} className="text-green-600 hover:text-green-800">
-                                <Check className="w-4 h-4" />
-                              </button>
-                              <button onClick={() => setEditandoIndex(null)} className="text-gray-500 hover:text-gray-700">
-                                <X className="w-4 h-4" />
-                              </button>
-                            </>
-                          ) : (
-                            <button onClick={() => startEditing(index, detalle.cantidad)} className="text-blue-600 hover:text-blue-800">
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                          )}
-
-                          <button onClick={() => handleEliminarArticulo(detalle.nroRenglonDV)} className="text-red-600 hover:text-red-800">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                    <div
+                      key={detalle.nroRenglonDV}
+                      className="grid grid-cols-5 gap-4 bg-white p-2 rounded shadow-sm items-center text-sm text-black"
+                    >
+                      <div>{detalle.articulo?.nombreArt}</div>
+                      <div>{detalle.articulo?.codArticulo}</div>
+                      <div className="text-center">
+                        {editandoIndex === index ? (
+                          <div className="flex justify-center items-center gap-1">
+                            <input
+                              type="number"
+                              min={1}
+                              value={newCantidad}
+                              onChange={(e) => {
+                                setNewCantidad(e.target.value);
+                                setCantidadError("");
+                              }}
+                              className="border rounded px-1 py-0.5 w-16 text-center"
+                            />
+                          </div>
+                        ) : (
+                          detalle.cantidad
+                        )}
+                        {editandoIndex === index && cantidadError && (
+                          <div className="text-red-600 text-xs mt-1 col-span-5">{cantidadError}</div>
+                        )}
                       </div>
-                    </li>
+                      <div className="text-center">${detalle.montoDetalleVenta}</div>
+                      <div className="flex justify-center gap-2">
+                        {editandoIndex === index ? (
+                          <>
+                            <button onClick={() => saveEditing(detalle)} className="text-green-600 hover:text-green-800">
+                              <Check className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => setEditandoIndex(null)} className="text-gray-500 hover:text-gray-700">
+                              <X className="w-4 h-4" />
+                            </button>
+                          </>
+                        ) : (
+                          <button onClick={() => startEditing(index, detalle.cantidad)} className="text-blue-600 hover:text-blue-800">
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button onClick={() => handleEliminarArticulo(detalle.nroRenglonDV)} className="text-red-600 hover:text-red-800">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
 
                 <button
                   onClick={() => handleEliminarVenta(ventaSeleccionada.nroVenta)}
