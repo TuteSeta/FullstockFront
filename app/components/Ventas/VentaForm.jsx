@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
+import Swal from 'sweetalert2';
 
 export default function VentaForm({ articulos, onSuccess }) {
   const [articulosVenta, setArticulosVenta] = useState([]);
@@ -14,18 +15,18 @@ export default function VentaForm({ articulos, onSuccess }) {
   const agregarArticulo = () => {
     const cantidadInt = parseInt(cantidad);
     if (!codArticulo || !cantidad || cantidadInt <= 0) {
-      alert("Seleccione un artículo y una cantidad válida.");
+      Swal.fire("Atención", "Seleccione un artículo y una cantidad válida.", "warning");
       return;
     }
 
     const articulo = articulos.find((a) => a.codArticulo === parseInt(codArticulo));
     if (!articulo) {
-      alert("Artículo no encontrado.");
+      Swal.fire("Error", "Artículo no encontrado.", "error");
       return;
     }
 
     if (cantidadInt > articulo.cantArticulo) {
-      alert("La cantidad supera el stock disponible.");
+      Swal.fire("Stock insuficiente", "La cantidad supera el stock disponible.", "error");
       return;
     }
 
@@ -86,12 +87,12 @@ export default function VentaForm({ articulos, onSuccess }) {
     e.preventDefault();
 
     if (Object.keys(errores).length > 0) {
-      alert("Corrige los errores antes de registrar la venta.");
+      Swal.fire("Errores", "Corrige los errores antes de registrar la venta.", "error");
       return;
     }
 
     if (articulosVenta.length === 0) {
-      alert("Agrega al menos un artículo a la venta.");
+      Swal.fire("Sin artículos", "Agrega al menos un artículo a la venta.", "warning");
       return;
     }
 
@@ -106,13 +107,24 @@ export default function VentaForm({ articulos, onSuccess }) {
       }),
     });
 
+    const data = await res.json();
+
     if (res.ok) {
+      if (Array.isArray(data.ordenesGeneradas) && data.ordenesGeneradas.length > 0) {
+        await Swal.fire({
+          icon: "info",
+          title: "Orden de compra generada automáticamente",
+          html: data.ordenesGeneradas.map(m => `<p>${m}</p>`).join(""),
+          confirmButtonColor: "#2563eb"
+        });
+      }
+
+      await Swal.fire("Éxito", "Venta registrada correctamente.", "success");
       setArticulosVenta([]);
-      setErrores({});
       onSuccess?.();
     } else {
-      const error = await res.json();
-      alert(error.error || "Error al registrar la venta");
+      console.error("❌ Error en venta:", data);
+      Swal.fire("Error", data.error || "Error al registrar la venta", "error");
     }
   };
 
@@ -139,9 +151,7 @@ export default function VentaForm({ articulos, onSuccess }) {
         <input
           type="number"
           min="1"
-          max={
-            articulos.find((a) => a.codArticulo === parseInt(codArticulo))?.cantArticulo || ""
-          }
+          max={articulos.find((a) => a.codArticulo === parseInt(codArticulo))?.cantArticulo || ""}
           className="col-span-3 border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Cantidad"
           value={cantidad}

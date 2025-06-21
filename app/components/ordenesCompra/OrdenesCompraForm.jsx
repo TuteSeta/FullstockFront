@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 
 export default function OrdenesCompraForm({ proveedores, articulos, onSuccess }) {
   const [codProveedor, setCodProveedor] = useState("");
@@ -68,36 +69,50 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!codProveedor) {
-      alert("Selecciona un proveedor.");
-      return;
-    }
-    if (detalleOC.length === 0) {
-      alert("Agrega al menos un artículo a la orden.");
-      return;
-    }
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        codProveedor: parseInt(codProveedor),
-        detalleOC: detalleOC.map(a => ({
-          codArticulo: a.codArticulo,
-          cantidadDOC: a.cantidadDOC,
-        })),
-      }),
-    });
+  e.preventDefault();
 
-    if (res.ok) {
-      setCodProveedor("");
-      setDetalleOC([]);
-      onSuccess?.();
-    } else {
-      const error = await res.json();
-      alert(error.error || "Error al registrar la orden de compra");
-    }
-  };
+  if (!codProveedor) {
+    Swal.fire("Falta proveedor", "Selecciona un proveedor.", "warning");
+    return;
+  }
+
+  if (detalleOC.length === 0) {
+    Swal.fire("Sin artículos", "Agrega al menos un artículo a la orden.", "warning");
+    return;
+  }
+
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      codProveedor: parseInt(codProveedor),
+      detalleOC: detalleOC.map((a) => ({
+        codArticulo: a.codArticulo,
+        cantidadDOC: a.cantidadDOC,
+      })),
+    }),
+  });
+
+  if (res.ok) {
+    setCodProveedor("");
+    setDetalleOC([]);
+    onSuccess?.();
+    Swal.fire({
+      icon: "success",
+      title: "Éxito",
+      text: "Orden de compra registrada correctamente.",
+      confirmButtonColor: "#16a34a", // verde Tailwind
+    });
+  } else {
+    const error = await res.json();
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: error.error || "No se pudo registrar la orden.",
+      confirmButtonColor: "#dc2626", // rojo Tailwind
+    });
+  }
+};
 
   return (
     <form
