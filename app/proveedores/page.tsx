@@ -17,28 +17,22 @@ type Proveedor = {
 export default function ProveedoresPage() {
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [mostrarInactivos, setMostrarInactivos] = useState(false);
 
-  const fetchProveedores = async (soloActivos = true) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedores?soloActivos=${soloActivos}`);
+  const fetchProveedores = async () => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedores?soloActivos=true`);
     const data = await res.json();
     setProveedores(data);
   };
-
-  useEffect(() => {
-    fetchProveedores(!mostrarInactivos); // si querés ver inactivos, no filtrás activos
-  }, [mostrarInactivos]);
 
   useEffect(() => {
     fetchProveedores();
   }, []);
 
   useEffect(() => {
-  const handler = () => fetchProveedores(!mostrarInactivos);
+  const handler = () => fetchProveedores();
   window.addEventListener('recargarProveedores', handler);
   return () => window.removeEventListener('recargarProveedores', handler);
-  }, [mostrarInactivos]);
-
+  }, []);
 
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -181,13 +175,6 @@ export default function ProveedoresPage() {
               <Plus className="mr-2" />
               Agregar proveedor
             </button>
-            <button
-              onClick={() => setMostrarInactivos(prev => !prev)}
-              className="text-sm text-blue-600 underline"
-            >
-              {mostrarInactivos ? 'Ocultar inactivos' : 'Mostrar también dados de baja'}
-            </button>
-
           </div>
         </div>
 
