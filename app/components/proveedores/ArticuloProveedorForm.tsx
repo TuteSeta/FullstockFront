@@ -47,7 +47,6 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
 
     const codArticuloNum = Number(formData.codArticulo);
 
-    // 1. Crear la relación proveedor-artículo
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -61,10 +60,8 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
     });
 
     if (res.ok) {
-      // Esperar un pequeño tiempo para asegurar que la relación esté guardada
       await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // 2. Obtener el artículo actual
       const articuloRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${codArticuloNum}`);
       if (!articuloRes.ok) {
         Swal.fire({
@@ -77,7 +74,6 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
       }
       const articulo = await articuloRes.json();
 
-      // 3. Limpiar nulls antes del PUT
       const bodyPut = cleanNulls({
         nombreArt: articulo.nombreArt,
         descripcion: articulo.descripcion,
@@ -128,12 +124,11 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
     }
   };
 
-
   return (
     <form onSubmit={handleSubmit} className="mt-6" onClick={(e) => e.stopPropagation()}>
       <h3 className="text-sm font-semibold mb-2">Asignar nuevo artículo</h3>
 
-      {/* MOBILE: layout en columnas con labels */}
+      {/* MOBILE */}
       <div className="md:hidden bg-white p-4 rounded shadow space-y-3 text-sm">
         <div>
           <label className="block font-medium mb-1">Artículo</label>
@@ -156,6 +151,7 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
           <label className="block font-medium mb-1">Precio de compra</label>
           <input
             type="number"
+            min={0}
             className="w-full border rounded px-2 py-1"
             value={formData.costoUnitarioAP}
             onChange={(e) => setFormData({ ...formData, costoUnitarioAP: e.target.value })}
@@ -167,6 +163,7 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
           <label className="block font-medium mb-1">Cargo pedido</label>
           <input
             type="number"
+            min={0}
             className="w-full border rounded px-2 py-1"
             value={formData.cargoPedidoAP}
             onChange={(e) => setFormData({ ...formData, cargoPedidoAP: e.target.value })}
@@ -178,6 +175,7 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
           <label className="block font-medium mb-1">Demora entrega (días)</label>
           <input
             type="number"
+            min={0}
             className="w-full border rounded px-2 py-1"
             value={formData.demoraEntregaAP}
             onChange={(e) => setFormData({ ...formData, demoraEntregaAP: e.target.value })}
@@ -193,7 +191,7 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
         </button>
       </div>
 
-      {/* DESKTOP: tabla tradicional */}
+      {/* DESKTOP */}
       <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-300 text-sm">
           <thead className="bg-blue-100 text-gray-800">
@@ -225,6 +223,7 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
               <td className="px-4 py-2">
                 <input
                   type="number"
+                  min={0}
                   className="w-24 border rounded px-2 py-1"
                   value={formData.costoUnitarioAP}
                   onChange={(e) => setFormData({ ...formData, costoUnitarioAP: e.target.value })}
@@ -234,6 +233,7 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
               <td className="px-4 py-2">
                 <input
                   type="number"
+                  min={0}
                   className="w-24 border rounded px-2 py-1"
                   value={formData.cargoPedidoAP}
                   onChange={(e) => setFormData({ ...formData, cargoPedidoAP: e.target.value })}
@@ -243,6 +243,7 @@ export default function ArticuloProveedorForm({ proveedorId, articulosAsignados,
               <td className="px-4 py-2">
                 <input
                   type="number"
+                  min={0}
                   className="w-24 border rounded px-2 py-1"
                   value={formData.demoraEntregaAP}
                   onChange={(e) => setFormData({ ...formData, demoraEntregaAP: e.target.value })}
