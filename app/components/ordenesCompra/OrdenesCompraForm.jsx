@@ -10,6 +10,7 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
   const [cantidadDOC, setCantidadDOC] = useState("");
   const [articulosProveedor, setArticulosProveedor] = useState([]);
   const [precioActual, setPrecioActual] = useState(null);
+  const [cantidadError, setCantidadError] = useState(""); // Nuevo estado para el error
 
   // Cargar artículos del proveedor seleccionado
   useEffect(() => {
@@ -32,7 +33,6 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
   useEffect(() => {
     if (codArticulo) {
       const art = articulosProveedor.find(a => a.codArticulo === parseInt(codArticulo));
-      console.log("Precio encontrado:", art?.precioUnitarioAP, "Tipo:", typeof art?.precioUnitarioAP);
       setPrecioActual(art ? art.precioUnitarioAP : null);
     } else {
       setPrecioActual(null);
@@ -42,13 +42,17 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
   // Agregar artículo a la orden
   const agregarArticulo = () => {
     if (!codArticulo || !cantidadDOC) return;
+    if (Number(cantidadDOC) < 1) {
+      setCantidadError("La cantidad debe ser mayor o igual a 1");
+      return;
+    }
+    setCantidadError(""); // Limpia el error si está todo bien
     const articulo = articulos.find(a => a.codArticulo === parseInt(codArticulo));
     const articuloProveedor = articulosProveedor.find(a => a.codArticulo === parseInt(codArticulo));
     if (!articulo || !articuloProveedor || typeof articuloProveedor.precioUnitarioAP !== "number") {
       alert("Error: no se pudo obtener el precio del artículo.");
       return;
     }
-    if (!articulo) return;
     setDetalleOC(prev => [
       ...prev,
       {
@@ -69,50 +73,50 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!codProveedor) {
-    Swal.fire("Falta proveedor", "Selecciona un proveedor.", "warning");
-    return;
-  }
+    if (!codProveedor) {
+      Swal.fire("Falta proveedor", "Selecciona un proveedor.", "warning");
+      return;
+    }
 
-  if (detalleOC.length === 0) {
-    Swal.fire("Sin artículos", "Agrega al menos un artículo a la orden.", "warning");
-    return;
-  }
+    if (detalleOC.length === 0) {
+      Swal.fire("Sin artículos", "Agrega al menos un artículo a la orden.", "warning");
+      return;
+    }
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      codProveedor: parseInt(codProveedor),
-      detalleOC: detalleOC.map((a) => ({
-        codArticulo: a.codArticulo,
-        cantidadDOC: a.cantidadDOC,
-      })),
-    }),
-  });
-
-  if (res.ok) {
-    setCodProveedor("");
-    setDetalleOC([]);
-    onSuccess?.();
-    Swal.fire({
-      icon: "success",
-      title: "Éxito",
-      text: "Orden de compra registrada correctamente.",
-      confirmButtonColor: "#16a34a", // verde Tailwind
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        codProveedor: parseInt(codProveedor),
+        detalleOC: detalleOC.map((a) => ({
+          codArticulo: a.codArticulo,
+          cantidadDOC: a.cantidadDOC,
+        })),
+      }),
     });
-  } else {
-    const error = await res.json();
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: error.error || "No se pudo registrar la orden.",
-      confirmButtonColor: "#dc2626", // rojo Tailwind
-    });
-  }
-};
+
+    if (res.ok) {
+      setCodProveedor("");
+      setDetalleOC([]);
+      onSuccess?.();
+      Swal.fire({
+        icon: "success",
+        title: "Éxito",
+        text: "Orden de compra registrada correctamente.",
+        confirmButtonColor: "#16a34a", // verde Tailwind
+      });
+    } else {
+      const error = await res.json();
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.error || "No se pudo registrar la orden.",
+        confirmButtonColor: "#dc2626", // rojo Tailwind
+      });
+    }
+  };
 
   return (
     <form
@@ -152,14 +156,20 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
             ))}
         </select>
 
-        <input
-          type="number"
-          min="1"
-          placeholder="Cantidad"
-          value={cantidadDOC}
-          onChange={e => setCantidadDOC(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 w-24 text-gray-800 bg-white"
-        />
+        <div className="flex flex-col">
+          <input
+            type="number"
+            min={1}
+            placeholder="Cantidad"
+            value={cantidadDOC}
+            onChange={e => {
+              setCantidadDOC(e.target.value);
+              setCantidadError("");
+            }}
+            className="border border-gray-300 rounded px-3 py-2 w-24 text-gray-800 bg-white"
+          />
+          
+        </div>
 
         {/* Mostrar el precio unitario y el monto calculado */}
         {precioActual !== null && cantidadDOC ? (
@@ -179,6 +189,11 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         </button>
       </div>
 
+      {/* Mensaje de error debajo de la fila */}
+      {cantidadError && (
+        <div className="text-red-600 text-xs mt-1">{cantidadError}</div>
+      )}
+      
       {/* Lista de artículos agregados */}
       <ul className="text-sm text-gray-700 space-y-2">
         {detalleOC.map(a => (
