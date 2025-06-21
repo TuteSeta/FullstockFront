@@ -232,11 +232,11 @@ export default function Home() {
           <h2 className="font-bold text-2xl text-white ">Gráfico de ventas</h2>
           <AreaChart
             className="h-80 mt-5 text-blue-500 
-    [&_.recharts-cartesian-axis-tick-value]:fill-blue-500 
-    [&_.recharts-label]:fill-blue-600 
-    [&_.recharts-dot]:fill-blue-500 
-    [&_.recharts-active-dot]:fill-white 
-    [&_.recharts-cartesian-axis-tick]:text-xs" // 👉 tamaño más chico por si hay más fechas
+            [&_.recharts-cartesian-axis-tick-value]:fill-blue-500 
+            [&_.recharts-label]:fill-blue-600 
+            [&_.recharts-dot]:fill-blue-500 
+            [&_.recharts-active-dot]:fill-white 
+            [&_.recharts-cartesian-axis-tick]:text-xs"
             data={chartdata}
             index="date"
             categories={["totalVentas"]}
@@ -244,15 +244,28 @@ export default function Home() {
             showLegend={false}
             showXAxis={true}
             showYAxis={true}
-            xAxisLabel="Mes"
+            showGridLines={true}
+            showAnimation={true}
+            startEndOnly={false}
+            xAxisLabel="Fecha"
             yAxisLabel="USD"
             valueFormatter={(number: number) =>
               `$${Intl.NumberFormat("en-US").format(number)}`
             }
+            customTooltip={({ active, payload, label }) => {
+              if (active && payload && payload.length) {
+                return (
+                  <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 text-white">
+                    <p className="text-sm font-medium">{label}</p>
+                    <p className="text-blue-400">
+                      Ventas: ${Intl.NumberFormat("en-US").format(payload[0].value as number)}
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            }}
           />
-
-
-
         </div>
       </div>
     </main>
