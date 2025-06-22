@@ -22,9 +22,9 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         setCodProveedor(articulo.codProveedorPredeterminado?.toString() ?? "");
 
         const cantidadSugerida =
-          articulo.modeloInventarioLoteFijo?.tamanoLoteFijo ??
-          articulo.modeloInventarioIntervaloFijo?.cantidadIntervaloFijo ??
-          articulo.modeloCantidadEconomica?.cantidadEconomicaPedido;
+          articulo.modeloInventarioLoteFijo?.loteOptimo ??
+          articulo.modeloInventarioIntervaloFijo?.cantidadPedido;
+
         console.log("Cantidad sugerida:", cantidadSugerida);
         if (typeof cantidadSugerida === "number" && cantidadSugerida > 0) {
           setCantidadDOC(cantidadSugerida.toString());
@@ -265,13 +265,15 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
           </li>
         ))}
       </ul>
+      <div className='flex items-center justify-center'>
+        <button
+          type="submit"
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold  w-1/5 cursor-pointer"
+        >
+          Registrar Orden de Compra
+        </button>
+      </div>
 
-      <button
-        type="submit"
-        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold w-full cursor-pointer"
-      >
-        Registrar Orden de Compra
-      </button>
     </form>
   );
 }
