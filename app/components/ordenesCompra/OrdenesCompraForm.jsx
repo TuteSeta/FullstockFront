@@ -10,7 +10,29 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
   const [cantidadDOC, setCantidadDOC] = useState("");
   const [articulosProveedor, setArticulosProveedor] = useState([]);
   const [precioActual, setPrecioActual] = useState(null);
-  const [cantidadError, setCantidadError] = useState(""); // Nuevo estado para el error
+  const [proveedorSugerido, setProveedorSugerido] = useState(null);
+  const [cantidadError, setCantidadError] = useState("");
+
+  // Actualizar proveedor sugerido y lote cuando cambia el artículo
+  useEffect(() => {
+    if (codArticulo) {
+      const articulo = articulos.find(a => a.codArticulo === parseInt(codArticulo));
+      if (articulo) {
+        setCodProveedor(articulo.codProveedorPredeterminado?.toString() ?? "");
+
+        const cantidadSugerida =
+          articulo.modeloInventarioLoteFijo?.tamanoLoteFijo ??
+          articulo.modeloInventarioIntervaloFijo?.cantidadIntervaloFijo ??
+          articulo.modeloCantidadEconomica?.cantidadEconomicaPedido;
+        console.log("Cantidad sugerida:", cantidadSugerida);
+        if (typeof cantidadSugerida === "number" && cantidadSugerida > 0) {
+          setCantidadDOC(cantidadSugerida.toString());
+        } else {
+          setCantidadDOC("");
+        }
+      }
+    }
+  }, [codArticulo]);
 
   // Cargar artículos del proveedor seleccionado
   useEffect(() => {
@@ -25,11 +47,10 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
     } else {
       setArticulosProveedor([]);
     }
-    setCodArticulo("");
     setPrecioActual(null);
   }, [codProveedor]);
 
-  // Actualizar precio cuando cambia el artículo
+  // Actualizar precio cuando cambia el artículo o artículos del proveedor
   useEffect(() => {
     if (codArticulo) {
       const art = articulosProveedor.find(a => a.codArticulo === parseInt(codArticulo));
@@ -39,14 +60,13 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
     }
   }, [codArticulo, articulosProveedor]);
 
-  // Agregar artículo a la orden
   const agregarArticulo = () => {
     if (!codArticulo || !cantidadDOC) return;
     if (Number(cantidadDOC) < 1) {
       setCantidadError("La cantidad debe ser mayor o igual a 1");
       return;
     }
-    setCantidadError(""); // Limpia el error si está todo bien
+    setCantidadError("");
     const articulo = articulos.find(a => a.codArticulo === parseInt(codArticulo));
     const articuloProveedor = articulosProveedor.find(a => a.codArticulo === parseInt(codArticulo));
     if (!articulo || !articuloProveedor || typeof articuloProveedor.precioUnitarioAP !== "number") {
@@ -59,7 +79,7 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         codArticulo: articulo.codArticulo,
         nombreArt: articulo.nombreArt,
         cantidadDOC: parseInt(cantidadDOC),
-        montoDOC: articuloProveedor.precioUnitarioAP * parseInt(cantidadDOC), // solo para mostrar
+        montoDOC: articuloProveedor.precioUnitarioAP * parseInt(cantidadDOC),
       }
     ]);
     setCodArticulo("");
@@ -67,24 +87,20 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
     setPrecioActual(null);
   };
 
-  // Eliminar artículo de la orden
   const eliminarArticulo = (codArticulo) => {
     setDetalleOC(prev => prev.filter(a => a.codArticulo !== codArticulo));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!codProveedor) {
       Swal.fire("Falta proveedor", "Selecciona un proveedor.", "warning");
       return;
     }
-
     if (detalleOC.length === 0) {
       Swal.fire("Sin artículos", "Agrega al menos un artículo a la orden.", "warning");
       return;
     }
-
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -96,8 +112,57 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         })),
       }),
     });
+    const data = await res.json();
+    if (res.ok && data.requiereConfirmacion) {
+      const confirmar = await Swal.fire({
+        icon: "warning",
+        title: "Confirmar creación",
+        text: data.mensaje,
+        showCancelButton: true,
+        confirmButtonText: "Sí, continuar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#16a34a",
+        cancelButtonColor: "#dc2626"
+      });
 
-    if (res.ok) {
+      if (!confirmar.isConfirmed) return;
+
+      // Enviamos nuevamente pero con un flag explícito de confirmación
+      const reintento = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          codProveedor: parseInt(codProveedor),
+          detalleOC: detalleOC.map((a) => ({
+            codArticulo: a.codArticulo,
+            cantidadDOC: a.cantidadDOC,
+          })),
+          confirmarConflicto: true  // este nuevo flag lo podés capturar opcionalmente en el backend
+        }),
+      });
+
+      if (reintento.ok) {
+        setCodProveedor("");
+        setDetalleOC([]);
+        onSuccess?.();
+        Swal.fire({
+          icon: "success",
+          title: "Éxito",
+          text: "Orden de compra registrada correctamente.",
+          confirmButtonColor: "#16a34a",
+        });
+      } else {
+        const err = await reintento.json();
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.error || "No se pudo registrar la orden.",
+          confirmButtonColor: "#dc2626",
+        });
+      }
+
+    } else if (res.ok) {
+      // Caso normal sin conflicto
       setCodProveedor("");
       setDetalleOC([]);
       onSuccess?.();
@@ -105,7 +170,7 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         icon: "success",
         title: "Éxito",
         text: "Orden de compra registrada correctamente.",
-        confirmButtonColor: "#16a34a", // verde Tailwind
+        confirmButtonColor: "#16a34a",
       });
     } else {
       const error = await res.json();
@@ -113,23 +178,34 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         icon: "error",
         title: "Error",
         text: error.error || "No se pudo registrar la orden.",
-        confirmButtonColor: "#dc2626", // rojo Tailwind
+        confirmButtonColor: "#dc2626",
       });
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="mt-4 space-y-4 text-sm"
-      onClick={e => e.stopPropagation()}
-    >
+    <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-sm" onClick={e => e.stopPropagation()}>
+      {/* Artículo */}
+      <select
+        value={codArticulo}
+        onChange={e => setCodArticulo(e.target.value)}
+        className="border border-gray-300 rounded px-3 py-2 col-span-full bg-white text-gray-800"
+
+      >
+        <option value="">Seleccione un artículo</option>
+        {articulos.map(a => (
+          <option key={a.codArticulo} value={a.codArticulo}>
+            {a.nombreArt}
+          </option>
+        ))}
+      </select>
+
       {/* Proveedor */}
       <select
         value={codProveedor}
         onChange={e => setCodProveedor(e.target.value)}
         className="border border-gray-300 rounded px-3 py-2 col-span-full bg-white text-gray-800"
-        required
+
       >
         <option value="">Seleccione un proveedor</option>
         {proveedores.map(p => (
@@ -139,23 +215,8 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         ))}
       </select>
 
-      {/* Artículo, cantidad y monto */}
+      {/* Cantidad y precio */}
       <div className="flex gap-2">
-        <select
-          value={codArticulo}
-          onChange={e => setCodArticulo(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 bg-white text-gray-800"
-        >
-          <option value="">Seleccione un artículo</option>
-          {articulosProveedor
-            .filter(a => !detalleOC.some(d => d.codArticulo === a.codArticulo))
-            .map(a => (
-              <option key={a.codArticulo} value={a.codArticulo}>
-                {a.nombreArt}
-              </option>
-            ))}
-        </select>
-
         <div className="flex flex-col">
           <input
             type="number"
@@ -168,10 +229,8 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
             }}
             className="border border-gray-300 rounded px-3 py-2 w-24 text-gray-800 bg-white"
           />
-          
         </div>
 
-        {/* Mostrar el precio unitario y el monto calculado */}
         {precioActual !== null && cantidadDOC ? (
           <div className="flex items-center text-gray-700">
             <span className="ml-2">
@@ -183,18 +242,16 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         <button
           type="button"
           onClick={agregarArticulo}
-          className="bg-blue-600 text-white px-3 py-1 rounded"
+          className="bg-blue-600 text-white px-3 cursor-pointer py-1 rounded"
         >
           Añadir
         </button>
       </div>
 
-      {/* Mensaje de error debajo de la fila */}
       {cantidadError && (
         <div className="text-red-600 text-xs mt-1">{cantidadError}</div>
       )}
-      
-      {/* Lista de artículos agregados */}
+
       <ul className="text-sm text-gray-700 space-y-2">
         {detalleOC.map(a => (
           <li key={a.codArticulo} className="flex justify-between items-center border-b pb-1">
@@ -214,7 +271,7 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
 
       <button
         type="submit"
-        className="col-span-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        className="col-span-full bg-blue-600 text-white px-4 py-2 cursor-pointer rounded hover:bg-blue-700 transition"
       >
         Registrar Orden de Compra
       </button>
