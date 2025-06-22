@@ -87,38 +87,50 @@ const handleFinalizarOrden = async (nroOrdenCompra) => {
     }
   }, [ordenes]);
 
-const handleEliminarOrden = async (nroOrdenCompra) => {
-  const result = await Swal.fire({
-    title: '¿Estás seguro?',
-    text: 'Esta acción eliminará la orden de forma permanente.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar'
-  });
-
-  if (result.isConfirmed) {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes/${nroOrdenCompra}`, {
-      method: "DELETE",
-    });
-
-    if (res.ok) {
-      await Swal.fire({
-        icon: 'success',
-        title: 'Eliminado',
-        text: 'La orden fue eliminada exitosamente.',
-        confirmButtonColor: '#16a34a'
+  const handleEliminarOrden = async (nroOrdenCompra) => {
+    // Validar que esté en estado pendiente
+    if (ordenSeleccionada.estadoOrdenCompra?.nombreEstadoOC !== "Pendiente") {
+      Swal.fire({
+        icon: 'info',
+        title: 'No se puede eliminar',
+        text: 'Solo se pueden eliminar órdenes en estado Pendiente.',
+        confirmButtonColor: '#6b7280'
       });
-      setOrdenSeleccionada(null);
-      onSuccess?.();
-    } else {
-      Swal.fire('Error', 'Error al eliminar la orden.', 'error');
+      return;
     }
+  
+    // Confirmación SweetAlert
+    const result = await Swal.fire({
+      title: '¿Eliminar esta orden pendiente?',
+      text: 'Esta acción eliminará la orden de forma permanente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+  
+    if (result.isConfirmed) {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes/${nroOrdenCompra}`, {
+        method: "DELETE",
+      });
+  
+      if (res.ok) {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Orden eliminada',
+          text: 'La orden fue eliminada exitosamente.',
+          confirmButtonColor: '#16a34a'
+        });
+        setOrdenSeleccionada(null);
+        onSuccess?.();
+      } else {
+        Swal.fire('Error', 'No se pudo eliminar la orden.', 'error');
+      }
     }
   };
-
+  
   const handleEditarArticulo = async (nroRenglonDOC, nuevaCantidad) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes-detalle/${nroRenglonDOC}`, {
       method: "PUT",

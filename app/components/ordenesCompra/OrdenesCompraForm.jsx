@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { Plus, Trash2 } from "lucide-react";
 import Swal from 'sweetalert2';
 
 export default function OrdenesCompraForm({ proveedores, articulos, onSuccess }) {
@@ -184,67 +185,60 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-sm" onClick={e => e.stopPropagation()}>
-      {/* Artículo */}
-      <select
-        value={codArticulo}
-        onChange={e => setCodArticulo(e.target.value)}
-        className="border border-gray-300 rounded px-3 py-2 col-span-full bg-white text-gray-800"
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-12 gap-2">
+        <select
+          value={codArticulo}
+          onChange={e => setCodArticulo(e.target.value)}
+          className="col-span-6 border border-gray-300 rounded px-3 py-2 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Seleccione un artículo</option>
+          {articulos.map(a => (
+            <option key={a.codArticulo} value={a.codArticulo}>
+              {a.nombreArt}
+            </option>
+          ))}
+        </select>
 
-      >
-        <option value="">Seleccione un artículo</option>
-        {articulos.map(a => (
-          <option key={a.codArticulo} value={a.codArticulo}>
-            {a.nombreArt}
-          </option>
-        ))}
-      </select>
+        <select
+          value={codProveedor}
+          onChange={e => setCodProveedor(e.target.value)}
+          className="col-span-3 border border-gray-300 rounded px-3 py-2 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Seleccione un proveedor</option>
+          {proveedores.map(p => (
+            <option key={p.codProveedor} value={p.codProveedor}>
+              {p.nombreProveedor}
+            </option>
+          ))}
+        </select>
 
-      {/* Proveedor */}
-      <select
-        value={codProveedor}
-        onChange={e => setCodProveedor(e.target.value)}
-        className="border border-gray-300 rounded px-3 py-2 col-span-full bg-white text-gray-800"
+        <input
+          type="number"
+          min="1"
+          placeholder="Cantidad"
+          value={cantidadDOC}
+          onChange={e => {
+            setCantidadDOC(e.target.value);
+            setCantidadError("");
+          }}
+          className="col-span-3 border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
-      >
-        <option value="">Seleccione un proveedor</option>
-        {proveedores.map(p => (
-          <option key={p.codProveedor} value={p.codProveedor}>
-            {p.nombreProveedor}
-          </option>
-        ))}
-      </select>
-
-      {/* Cantidad y precio */}
-      <div className="flex gap-2">
-        <div className="flex flex-col">
-          <input
-            type="number"
-            min={1}
-            placeholder="Cantidad"
-            value={cantidadDOC}
-            onChange={e => {
-              setCantidadDOC(e.target.value);
-              setCantidadError("");
-            }}
-            className="border border-gray-300 rounded px-3 py-2 w-24 text-gray-800 bg-white"
-          />
+      {precioActual !== null && cantidadDOC ? (
+        <div className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
+          <span>Precio: ${precioActual} | Monto: ${Number(precioActual) * Number(cantidadDOC)}</span>
         </div>
+      ) : null}
 
-        {precioActual !== null && cantidadDOC ? (
-          <div className="flex items-center text-gray-700">
-            <span className="ml-2">
-              Precio: ${precioActual} | Monto: ${Number(precioActual) * Number(cantidadDOC)}
-            </span>
-          </div>
-        ) : null}
-
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={agregarArticulo}
-          className="bg-blue-600 text-white px-3 cursor-pointer py-1 rounded"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 cursor-pointer rounded flex items-center justify-center gap-1"
         >
-          Añadir
+          <Plus className="w-4 h-4" /> Añadir
         </button>
       </div>
 
@@ -252,18 +246,21 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
         <div className="text-red-600 text-xs mt-1">{cantidadError}</div>
       )}
 
-      <ul className="text-sm text-gray-700 space-y-2">
+      <ul className="space-y-2">
         {detalleOC.map(a => (
-          <li key={a.codArticulo} className="flex justify-between items-center border-b pb-1">
-            <span>
-              {a.nombreArt} - Cantidad: {a.cantidadDOC} - Monto: ${a.montoDOC}
-            </span>
+          <li
+            key={a.codArticulo}
+            className="flex justify-between items-center border rounded px-4 py-2 bg-gray-50"
+          >
+            <div className="flex-1">
+              <span className="text-gray-800 font-medium">{a.nombreArt} - Cantidad: {a.cantidadDOC} - Monto: ${a.montoDOC}</span>
+            </div>
             <button
               type="button"
               onClick={() => eliminarArticulo(a.codArticulo)}
-              className="text-red-600 hover:text-red-800 ml-2"
+              className="text-red-600 hover:text-red-800"
             >
-              Eliminar
+              <Trash2 className="w-4 h-4" />
             </button>
           </li>
         ))}
@@ -271,7 +268,7 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
 
       <button
         type="submit"
-        className="col-span-full bg-blue-600 text-white px-4 py-2 cursor-pointer rounded hover:bg-blue-700 transition"
+        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold w-full cursor-pointer"
       >
         Registrar Orden de Compra
       </button>
