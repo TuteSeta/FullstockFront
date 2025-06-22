@@ -18,7 +18,7 @@ Antes de comenzar, asegurate de tener instalado:
 1. Cloná el repositorio o descargalo:
 
 ```bash
-git clone <url-del-repo>
+git clone https://github.com/TuteSeta/FullstockFront.git
 cd nombre-del-proyecto
 ```
 2. Instalá las dependencias generales del proyecto:
