@@ -66,19 +66,25 @@ export default function Home() {
   const [ventasDelta, setVentasDelta] = useState<number | null>(null);
 
 
-
-  const [stockBajo, setStockBajo] = useState<
+  const [stockAlto, setStockAlto] = useState<
     { nombre: string; cantidad: number; total: number; stockSeguridad: number }[]
   >([]);
 
+
+  const [ordenesFinalizadas, setOrdenesFinalizadas] = useState<number | null>(null);
+
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/stock-bajo`)
-      .then((res) => res.json())
-      .then((data) => setStockBajo(data))
-      .catch((err) => console.error("Error al obtener stock bajo:", err));
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/ordenes/finalizadas/count`)
+      .then(res => res.json())
+      .then(data => setOrdenesFinalizadas(data.total))
+      .catch(err => console.error("Error al obtener OC finalizadas:", err));
   }, []);
 
-  const maxStock = stockBajo.length > 0 ? Math.max(...stockBajo.map(item => item.cantidad)) : 1;
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/stock-mayor`)
+    .then((res) => res.json())
+    .then((data) => setStockAlto(data))
+
+  const maxStock = stockAlto.length > 0 ? Math.max(...stockAlto.map(item => item.cantidad)) : 1;
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/ventas/historico`)
@@ -176,8 +182,12 @@ export default function Home() {
         <Link href="/ordenesCompra" className="block">
           <StatCard
             title="Pedidos realizados"
-            value="1.952"
-            delta="+7%"
+            value={
+              ordenesFinalizadas !== null
+                ? ordenesFinalizadas.toLocaleString("es-AR")
+                : "Cargando..."
+            }
+            delta="+0%" // opcional, o podés calcular un delta similar a ventas
             increase
           />
         </Link>
@@ -200,9 +210,9 @@ export default function Home() {
       <div className="flex justify-between flex-row gap-10">
         {/* Stock por artículo */}
         <div className="mt-12 w-1/2">
-          <h2 className="text-2xl text-white font-bold">Niveles de Stock</h2>
+          <h2 className="text-2xl text-white font-bold">Artículos con más stock</h2>
           <Card className="text-white p-6 rounded-lg shadow-md">
-            {stockBajo.map((item, idx) => {
+            {stockAlto.map((item, idx) => {
               const porcentaje = maxStock > 0 ? (item.cantidad / maxStock) * 100 : 0;
 
               return (
@@ -210,12 +220,12 @@ export default function Home() {
                   <div className="flex justify-between mb-1 text-sm">
                     <Text className="text-white">{item.nombre}</Text>
                     <Text className="text-gray-300">
-                      {item.cantidad} restantes
+                      {item.cantidad} unidades
                     </Text>
                   </div>
                   <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
                     <div
-                      className="h-full transition-all duration-500 rounded-full bg-lime-400"
+                      className="h-full transition-all duration-500 rounded-full bg-cyan-400"
                       style={{ width: `${porcentaje}%` }}
                     />
                   </div>
@@ -223,6 +233,7 @@ export default function Home() {
               );
             })}
           </Card>
+
 
         </div>
 
