@@ -212,8 +212,8 @@ export default function ArticuloForm({ articulo, onSuccess }) {
           { name: 'costoMantenimiento', label: 'Costo Mantenimiento', type: 'number' },
           { name: 'desviacionDemandaLArticulo', label: 'Desviación Demanda L Artículo', type: 'number' },
           { name: 'desviacionDemandaTArticulo', label: 'Desviación Demanda T Artículo', type: 'number' },
-          { name: 'nivelServicioDeseado', label: 'Nivel Servicio Deseado', type: 'number' },
-        ].map(({ name, label, type = 'text' }) => (
+          { name: 'nivelServicioDeseado', label: 'Nivel Servicio Deseado', type: 'number', min: 0, max: 1, step: 'any' },
+        ].map(({ name, label, type = 'text', min, max, step }) => (
           <input
             key={name}
             name={name}
@@ -223,7 +223,7 @@ export default function ArticuloForm({ articulo, onSuccess }) {
             onChange={handleChange}
             required
             className="border border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-black"
-            {...(type === 'number' ? { min: 0} : {})}
+            {...(type === 'number' ? { min, max, step} : {})}
           />
 
         ))}
