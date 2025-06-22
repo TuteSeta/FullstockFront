@@ -61,32 +61,55 @@ export default function OrdenesCompraForm({ proveedores, articulos, onSuccess })
     }
   }, [codArticulo, articulosProveedor]);
 
-  const agregarArticulo = () => {
-    if (!codArticulo || !cantidadDOC) return;
-    if (Number(cantidadDOC) < 1) {
-      setCantidadError("La cantidad debe ser mayor o igual a 1");
-      return;
+  const agregarArticulo = async () => {
+  if (!codArticulo || !cantidadDOC) return;
+
+  if (Number(cantidadDOC) < 1) {
+    setCantidadError("La cantidad debe ser mayor o igual a 1");
+    return;
+  }
+
+  setCantidadError("");
+
+  const articulo = articulos.find(a => a.codArticulo === parseInt(codArticulo));
+  const articuloProveedor = articulosProveedor.find(a => a.codArticulo === parseInt(codArticulo));
+
+  if (!articulo || !articuloProveedor || typeof articuloProveedor.precioUnitarioAP !== "number") {
+    alert("Error: no se pudo obtener el precio del artículo.");
+    return;
+  }
+
+  // Validación del Punto de Pedido con modelo Lote Fijo
+  if (articulo.modeloInventarioLoteFijo) {
+    const cantidadOrdenada = parseInt(cantidadDOC);
+    const puntoPedido = articulo.modeloInventarioLoteFijo.puntoPedido;
+
+    if (cantidadOrdenada <= puntoPedido) {
+      await Swal.fire({
+        icon: "info",
+        title: "Cantidad insuficiente",
+        text: `La cantidad ingresada (${cantidadOrdenada}) no supera el Punto de Pedido (${puntoPedido}) definido para este artículo.`,
+        confirmButtonColor: "#2563eb"
+      });
+      return; 
     }
-    setCantidadError("");
-    const articulo = articulos.find(a => a.codArticulo === parseInt(codArticulo));
-    const articuloProveedor = articulosProveedor.find(a => a.codArticulo === parseInt(codArticulo));
-    if (!articulo || !articuloProveedor || typeof articuloProveedor.precioUnitarioAP !== "number") {
-      alert("Error: no se pudo obtener el precio del artículo.");
-      return;
+  }
+
+
+  setDetalleOC(prev => [
+    ...prev,
+    {
+      codArticulo: articulo.codArticulo,
+      nombreArt: articulo.nombreArt,
+      cantidadDOC: parseInt(cantidadDOC),
+      montoDOC: articuloProveedor.precioUnitarioAP * parseInt(cantidadDOC),
     }
-    setDetalleOC(prev => [
-      ...prev,
-      {
-        codArticulo: articulo.codArticulo,
-        nombreArt: articulo.nombreArt,
-        cantidadDOC: parseInt(cantidadDOC),
-        montoDOC: articuloProveedor.precioUnitarioAP * parseInt(cantidadDOC),
-      }
-    ]);
-    setCodArticulo("");
-    setCantidadDOC("");
-    setPrecioActual(null);
-  };
+  ]);
+  setCodArticulo("");
+  setCantidadDOC("");
+  setPrecioActual(null);
+};
+
 
   const eliminarArticulo = (codArticulo) => {
     setDetalleOC(prev => prev.filter(a => a.codArticulo !== codArticulo));
