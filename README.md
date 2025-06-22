@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend del Sistema de Gestión de Inventario
 
-## Getting Started
+Este proyecto corresponde al frontend de la aplicación de gestión de inventarios desarrollada para el Trabajo Práctico de Investigación Operativa 2025. Utiliza Next.js, TailwindCSS y varias librerías complementarias para visualización y estilos.
 
-First, run the development server:
+---
+
+## 🚀 Requisitos Previos
+
+Antes de comenzar, asegurate de tener instalado:
+
+- [Node.js](https://nodejs.org/) versión 16 o superior
+- npm versión 8 o superior
+
+---
+
+## 📦 Instalación
+
+1. Cloná el repositorio o descargalo:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <url-del-repo>
+cd nombre-del-proyecto
 ```
+2. Instalá las dependencias generales del proyecto:
+```bash
+npm install
+```
+3. Instalá manualmente las siguientes dependencias adicionales necesarias:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+npm install @tremor/react --legacy-peer-deps
+npm install recharts --legacy-peer-deps
+npm install tailwind-variants --legacy-peer-deps
+```
+⚠️ Estas dependencias deben instalarse por separado debido a requisitos de compatibilidad (--legacy-peer-deps).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+🔌 Conexión con el Backend
+El frontend se comunica con la API del backend mediante la variable de entorno:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+🛠️ Reemplazá http://localhost:3001/api por la URL real donde esté corriendo tu servidor Express.
 
-## Learn More
+Pasos:
+Crear un archivo .env.local en la raíz del proyecto:
 
-To learn more about Next.js, take a look at the following resources:
+Copiar y pegar:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+Guardar el archivo y reiniciar el servidor de desarrollo si ya estaba corriendo.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+🧪 Entorno de desarrollo
+Para correr el proyecto en modo desarrollo:
+```bash
+npm run dev
+```
+El frontend estará disponible en: http://localhost:3000
 
-## Deploy on Vercel
+🛠️ Tecnologías utilizadas
+Next.js
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Tailwind CSS
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Tremor
+
+Recharts
+
+Tailwind Variants
+
+📁 Estructura del proyecto
+El proyecto está organizado de la siguiente manera:
+
+/app: Rutas y páginas del frontend
+
+/components: Componentes reutilizables por módulo
+
+/public: Recursos estáticos (logos, imágenes)
+
+/styles: Configuración y estilos base de Tailwind
+
