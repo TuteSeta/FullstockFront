@@ -19,7 +19,7 @@ Antes de comenzar, asegurate de tener instalado:
 
 ```bash
 git clone https://github.com/TuteSeta/FullstockFront.git
-cd nombre-del-proyecto
+cd FullstockFront
 ```
 2. Instalá las dependencias generales del proyecto:
 ```bash
