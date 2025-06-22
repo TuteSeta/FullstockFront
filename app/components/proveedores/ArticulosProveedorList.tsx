@@ -9,6 +9,9 @@ type ArticuloProveedor = {
   articulo: {
     nombreArt: string;
     descripcion: string;
+    proveedorPredeterminado?: {
+      codProveedor: number;
+    };
   };
   costoUnitarioAP: number;
   cargoPedidoAP: number;
@@ -40,57 +43,57 @@ export default function ArticulosProveedorList({ proveedorId, articulos, onDelet
     });
   };
 
-const guardarCambios = async (codArticulo: number) => {
-  try {
-    // 1. Actualizar la relación proveedor-artículo
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos/${proveedorId}/${codArticulo}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        codProveedor: proveedorId,
-        codArticulo: codArticulo,
-        ...formData,
-      }),
-    });
+  const guardarCambios = async (codArticulo: number) => {
+    try {
+      // 1. Actualizar la relación proveedor-artículo
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/proveedor-articulos/${proveedorId}/${codArticulo}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          codProveedor: proveedorId,
+          codArticulo: codArticulo,
+          ...formData,
+        }),
+      });
 
-    // 2. Esperar un poco para asegurar que la relación se guardó
-    await new Promise((resolve) => setTimeout(resolve, 300));
+      // 2. Esperar un poco para asegurar que la relación se guardó
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
-    // 3. Obtener el artículo actualizado
-    const articuloRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${codArticulo}`);
-    if (!articuloRes.ok) throw new Error('No se pudo obtener el artículo');
-    const articulo = await articuloRes.json();
+      // 3. Obtener el artículo actualizado
+      const articuloRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${codArticulo}`);
+      if (!articuloRes.ok) throw new Error('No se pudo obtener el artículo');
+      const articulo = await articuloRes.json();
 
-    // 4. Hacer PUT al artículo para recalcular el modelo de lote fijo
-    const bodyPut = {
-      nombreArt: articulo.nombreArt,
-      descripcion: articulo.descripcion,
-      demanda: articulo.demanda,
-      precioArticulo: articulo.precioArticulo,
-      cantArticulo: articulo.cantArticulo,
-      costoMantenimiento: articulo.costoMantenimiento,
-      desviacionDemandaLArticulo: articulo.desviacionDemandaLArticulo,
-      desviacionDemandaTArticulo: articulo.desviacionDemandaTArticulo,
-      nivelServicioDeseado: articulo.nivelServicioDeseado,
-      modeloInventarioLoteFijo: articulo.modeloInventarioLoteFijo,
-      modeloInventarioIntervaloFijo: articulo.modeloInventarioIntervaloFijo,
-      codProveedorPredeterminado: proveedorId,
-      recalcularLoteFijo: true
-    };
+      // 4. Hacer PUT al artículo para recalcular el modelo de lote fijo
+      const bodyPut = {
+        nombreArt: articulo.nombreArt,
+        descripcion: articulo.descripcion,
+        demanda: articulo.demanda,
+        precioArticulo: articulo.precioArticulo,
+        cantArticulo: articulo.cantArticulo,
+        costoMantenimiento: articulo.costoMantenimiento,
+        desviacionDemandaLArticulo: articulo.desviacionDemandaLArticulo,
+        desviacionDemandaTArticulo: articulo.desviacionDemandaTArticulo,
+        nivelServicioDeseado: articulo.nivelServicioDeseado,
+        modeloInventarioLoteFijo: articulo.modeloInventarioLoteFijo,
+        modeloInventarioIntervaloFijo: articulo.modeloInventarioIntervaloFijo,
+        codProveedorPredeterminado: proveedorId,
+        recalcularLoteFijo: true
+      };
 
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${codArticulo}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bodyPut),
-    });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articulos/${codArticulo}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyPut),
+      });
 
-    setEditandoId(null);
-    setFormData({});
-    await onDelete();
-  } catch {
-    alert('Error al actualizar los datos');
-  }
-};
+      setEditandoId(null);
+      setFormData({});
+      await onDelete();
+    } catch {
+      alert('Error al actualizar los datos');
+    }
+  };
 
   const eliminarArticuloProveedor = async (codArticulo: number) => {
     const confirmar = await Swal.fire({
@@ -169,6 +172,7 @@ const guardarCambios = async (codArticulo: number) => {
                 <th className="px-4 py-2 text-left">Cargo pedido</th>
                 <th className="px-4 py-2 text-left">Demora entrega (días)</th>
                 <th className="px-4 py-2 text-left">Acciones</th>
+                <th className="px-4 py-2 text-left">Predeterminado</th>
               </tr>
             </thead>
             <tbody>
@@ -256,6 +260,11 @@ const guardarCambios = async (codArticulo: number) => {
                         </button>
                       </>
                     )}
+                  </td>
+                  <td className="px-4 py-2">
+                    {rel.articulo.proveedorPredeterminado?.codProveedor === proveedorId
+                      ? <span className="text-green-600 font-semibold">Sí</span>
+                      : <span className="text-gray-500">No</span>}
                   </td>
                 </tr>
               ))}
