@@ -34,7 +34,7 @@ npm install tailwind-variants --legacy-peer-deps
 ```
 ⚠️ Estas dependencias deben instalarse por separado debido a requisitos de compatibilidad (--legacy-peer-deps).
 
-🔌 Conexión con el Backend
+## 🔌 Conexión con el Backend
 El frontend se comunica con la API del backend mediante la variable de entorno:
 
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
@@ -48,7 +48,7 @@ Copiar y pegar:
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
 Guardar el archivo y reiniciar el servidor de desarrollo si ya estaba corriendo.
 
-🧪 Entorno de desarrollo
+## 🧪 Entorno de desarrollo
 Para correr el proyecto en modo desarrollo:
 ```bash
 npm run dev
@@ -66,7 +66,7 @@ Recharts
 
 Tailwind Variants
 
-📁 Estructura del proyecto
+## 📁 Estructura del proyecto
 El proyecto está organizado de la siguiente manera:
 
 /app: Rutas y páginas del frontend
